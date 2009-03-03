@@ -49,7 +49,7 @@ use C4::Reserves;
 use C4::Branch; # GetBranchName
 
 #use Smart::Comments;
-#use Data::Dumper;
+use Data::Dumper;
 
 use vars qw($debug);
 
@@ -348,6 +348,15 @@ if (C4::Context->preference('ExtendedPatronAttributes')) {
     if (scalar(@types) == 0) {
         $template->param(no_patron_attribute_types => 1);
     }
+}
+
+my @previousCardnumbers = C4::Stats::GetPreviousCardnumbers( $borrowernumber );
+
+if ( @previousCardnumbers ) {
+  $template->param(
+    previousCardnumbersLoop => \@previousCardnumbers,
+    previousCardnumbersCount => scalar( @previousCardnumbers )
+  );
 }
 
 $template->param(
