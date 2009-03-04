@@ -703,6 +703,17 @@ $template->param(
 my ($picture, $dberror) = GetPatronImage($borrower->{'cardnumber'});
 $template->param( picture => 1 ) if $picture;
 
+# get authorised values with type of BOR_NOTES   
+my @canned_notes;     
+my $dbh = C4::Context->dbh;
+my $sth = $dbh->prepare('SELECT * FROM authorised_values WHERE category = "BOR_NOTES"');
+$sth->execute();          
+while ( my $row = $sth->fetchrow_hashref() ) {
+  push @canned_notes, $row;               
+}                  
+if ( scalar( @canned_notes ) ) {
+  $template->param( canned_bor_notes_loop => \@canned_notes );
+}
 
 $template->param(
     debt_confirmed            => $debt_confirmed,

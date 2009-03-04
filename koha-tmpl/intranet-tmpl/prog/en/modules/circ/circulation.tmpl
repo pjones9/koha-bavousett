@@ -273,15 +273,30 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
 <form method="post" action="/cgi-bin/koha/circ/add_message.pl" id="message_form" name="message_f">
 <fieldset id="borrower_messages">
 	<legend>Leave A Message</legend>
-    	<label for="message_type">Add A Message For</label>
-	<select name="message_type" id="message_type">
-		<option value="L">Other Librarians</option>
-		<option value="B"><!-- TMPL_VAR name="firstname" --></option>
-	</select>
-	<br/>
-	<textarea rows="3" cols="60" name="borrower_message" id="borrower_message" ></textarea>
-	<br/>
-	<input type="submit" value="Save Message" />
+	<p>
+	    	<label for="message_type">Add A Message For</label>
+  		<select name="message_type" id="message_type">
+			<option value="L">Other Librarians</option>
+			<option value="B"><!-- TMPL_VAR name="firstname" --></option>
+		</select>
+	</p>
+	<!-- TMPL_IF NAME="canned_bor_notes_loop" -->
+		<p>
+		        <label for="canned_notes">Canned Notes: </label>
+		        <select name="type" id="type" onchange="this.form.borrower_message.value=this.options[this.selectedIndex].value;"> 
+					<option value=''>Select Note</option>
+			        <!-- TMPL_LOOP NAME="canned_bor_notes_loop" -->
+					<option value="<!-- TMPL_VAR NAME="lib" -->"><!--TMPL_VAR NAME="authorised_value" --></option>
+			        <!-- /TMPL_LOOP -->
+		        </select>
+		</p>
+	<!-- /TMPL_IF -->
+	<p>
+		<textarea rows="3" cols="60" name="borrower_message" id="borrower_message" ></textarea>
+	</p>
+	<p>
+		<input type="submit" value="Save Message" />
+	</p>
 
         <input type="hidden" name="borrowernumber" id="borrowernumber" value="<!-- TMPL_VAR NAME="borrowernumber" -->" />
     	<input type="hidden" name="branchcode" value="<!-- TMPL_VAR NAME="branch" -->" />
