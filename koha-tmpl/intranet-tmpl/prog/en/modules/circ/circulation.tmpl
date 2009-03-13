@@ -51,6 +51,20 @@ $.tablesorter.addParser({
 	 });
 //]]>
 </script>
+
+<script>
+function showhide(id){
+  if (document.getElementById){
+    obj = document.getElementById(id);
+    if (obj.style.display == "none"){
+      obj.style.display = "";
+    } else {
+      obj.style.display = "none";
+    }
+  }
+}
+</script>
+
 <!-- TMPL_INCLUDE NAME="calendar.inc" -->
 </head>
 <body>
@@ -251,7 +265,31 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
 <!-- TMPL_IF NAME="flagged" -->
 <div class="yui-u first">
 <!-- TMPL_ELSE -->
-<div><!-- /TMPL_IF --><form method="post" action="/cgi-bin/koha/circ/circulation.pl" name="mainform">
+<div>
+
+<!-- /TMPL_IF -->
+
+<div style="display: none;" id="add_message">
+<form method="post" action="/cgi-bin/koha/circ/add_message.pl" id="message_form" name="message_f">
+<fieldset id="borrower_messages">
+	<legend>Leave A Message</legend>
+    	<label for="message_type">Add A Message For</label>
+	<select name="message_type" id="message_type">
+		<option value="L">Other Librarians</option>
+		<option value="B"><!-- TMPL_VAR name="firstname" --></option>
+	</select>
+	<br/>
+	<textarea rows="3" cols="60" name="borrower_message" id="borrower_message" ></textarea>
+	<br/>
+	<input type="submit" value="Save Message" />
+
+        <input type="hidden" name="borrowernumber" id="borrowernumber" value="<!-- TMPL_VAR NAME="borrowernumber" -->" />
+    	<input type="hidden" name="branchcode" value="<!-- TMPL_VAR NAME="branch" -->" />
+</fieldset>
+</form>
+</div>
+
+<form method="post" action="/cgi-bin/koha/circ/circulation.pl" name="mainform">
 <fieldset id="circ_circulation_issue">
     <label for="barcode">Checking out to <!-- TMPL_VAR name="firstname" --> <!-- TMPL_VAR name="surname" --> (<!-- TMPL_VAR NAME="cardnumber" -->) </label>
 	<div class="hint">Enter item barcode:</div>
@@ -400,9 +438,24 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
 			<h4>Notes:</h4>
             <p><span class="circ-hlt"><!-- TMPL_VAR name="notesmsg" --></span></p>
 			</div>
+
+
     <!-- /If notes --><!-- /TMPL_IF -->
      <!-- /If flagged --><!-- /TMPL_IF -->
 
+	<div id="messages" class="circmessage">
+		<h4>Messages:</h4>
+		<ul>
+			<!--TMPL_LOOP NAME="lib_messages_loop" -->
+				<li><span class="circ-hlt"><!--TMPL_VAR NAME="message_date_formatted"--> <!--TMPL_VAR NAME="branchcode"--> <i>"<!--TMPL_VAR NAME="message"-->"</i></span> <!-- TMPL_IF NAME="can_delete" --><a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a><!-- /TMPL_IF --></li>
+			<!-- /TMPL_LOOP -->
+			<!--TMPL_LOOP NAME="bor_messages_loop" -->
+				<li><span class=""><!--TMPL_VAR NAME="message_date_formatted"--> <!--TMPL_VAR NAME="branchcode"--> <i>"<!--TMPL_VAR NAME="message"-->"</i></span> <!-- TMPL_IF NAME="can_delete" --><a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a><!-- /TMPL_IF --></li>
+			<!-- /TMPL_LOOP -->
+
+			<a href="#" onclick="showhide('add_message'); return(false);">Add A New Message</a>
+		</ul>
+	</div>
 
 </div>
 </div>
