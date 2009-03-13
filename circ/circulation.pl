@@ -643,6 +643,8 @@ if ( C4::Context->preference("memberofinstitution") ) {
 
 $template->param(
     issued_itemtypes_count_loop => \@issued_itemtypes_count_loop,
+    lib_messages_loop		=> GetMessages( $borrowernumber, 'L', $branch ),
+    bor_messages_loop		=> GetMessages( $borrowernumber, 'B', $branch ),
     findborrower                => $findborrower,
     borrower                    => $borrower,
     borrowernumber              => $borrowernumber,
