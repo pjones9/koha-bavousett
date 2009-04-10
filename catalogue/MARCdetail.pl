@@ -318,4 +318,14 @@ $template->param (
 	marcview => 1,
 );
 
+# Get itemnumber to supply to 'New > New Item' URL
+my @items = GetItemsInfo($biblionumber);
+my $itemcount = 0;
+my $additemnumber;
+foreach my $item (@items) {
+  $additemnumber = $item->{'itemnumber'} if (!$itemcount);
+  $itemcount++;
+}
+$template->param(additemnumber => $additemnumber);
+
 output_html_with_http_headers $query, $cookie, $template->output;
