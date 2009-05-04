@@ -115,6 +115,7 @@ if ($cardnumber) {
     my @getreservloop;
     my $count_reserv = 0;
     my $maxreserves;
+    my $maxreservesperday;
 
 #   we check the reserves of the borrower, and if he can reserv a document
 # FIXME At this time we have a simple count of reservs, but, later, we could improve the infos "title" ...
@@ -126,6 +127,18 @@ if ($cardnumber) {
 		$warnings = 1;
         $maxreserves = 1;
     }
+
+    if ( C4::Context->preference('MaxHoldsPerDay') ) {
+    	my $reserves_today = GetReserveCount( $borrowerinfo->{'borrowernumber'}, my $today = 1 );
+
+    	if ( $reserves_today >= C4::Context->preference('MaxHoldsPerDay') ) {
+          $warnings = 1;
+          $maxreservesperday = 1;
+          $template->param( override_required => 1 );
+        }
+    	                    
+    }
+    
 
     # we check the date expiry of the borrower (only if there is an expiry date, otherwise, set to 1 (warn)
     my $expiry_date = $borrowerinfo->{dateexpiry};
@@ -157,6 +170,7 @@ if ($cardnumber) {
                 borrowercategory => $borrowerinfo->{'category'},
                 borrowerreservs   => $count_reserv,
                 maxreserves       => $maxreserves,
+                maxreservesperday => $maxreservesperday,
                 expiry            => $expiry,
                 diffbranch        => $diffbranch,
 				messages => $messages,

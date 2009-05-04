@@ -328,22 +328,23 @@ sub GetReservesFromBorrowernumber {
 
 =item GetReserveCount
 
-$number = &GetReserveCount($borrowernumber);
+$number = &GetReserveCount($borrowernumber [, $today ]);
 
 this function returns the number of reservation for a borrower given on input arg.
 
+If optional $today is true, will return only holds placed today.
 =cut
 
 sub GetReserveCount {
-    my ($borrowernumber) = @_;
+    my ($borrowernumber, $today ) = @_;
 
     my $dbh = C4::Context->dbh;
 
-    my $query = '
-        SELECT COUNT(*) AS counter
-        FROM reserves
-          WHERE borrowernumber = ?
-    ';
+    my $query = "SELECT COUNT(*) AS counter FROM reserves WHERE borrowernumber = ?";
+    
+    if ( $today ) {
+      $query .= ' AND DATE( reserves.timestamp ) = DATE( NOW() )';
+    }
     my $sth = $dbh->prepare($query);
     $sth->execute($borrowernumber);
     my $row = $sth->fetchrow_hashref;
