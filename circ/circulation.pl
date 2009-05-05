@@ -231,6 +231,10 @@ if ($findborrower) {
 my $borrower;
 my @lines;
 if ($borrowernumber) {
+    if ( C4::Context->preference('CheckoutTimeout') ) {
+      $template->param( CheckoutTimeout => C4::Context->preference('CheckoutTimeout') );
+    }
+
     $borrower = GetMemberDetails( $borrowernumber, 0 );
     my ( $od, $issue, $fines ) = GetMemberIssuesAndFines( $borrowernumber );
 
