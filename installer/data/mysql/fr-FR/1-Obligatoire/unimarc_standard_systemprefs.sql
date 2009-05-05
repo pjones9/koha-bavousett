@@ -247,3 +247,4 @@ INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('v
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewLabeledMARC','0','Autoriser l''affichage MARC labellis des notices bibliographiques','','YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewMARC','1','Autoriser l''affichage de la vue MARC des notices bibliographiques','','YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('FilterBeforeOverdueReport','0','Ne pas lancer le rapport sur les retards tant qu''il n''y a pas de filtre','','YesNo');
+INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'CheckoutTimeout', '0', '', 'Value in seconds before a window pops up on the circ screen asking the librarian if they would like to continue using this record or to search for a new borrower.', 'Integer');
