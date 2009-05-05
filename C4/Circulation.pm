@@ -1400,6 +1400,9 @@ sub AddReturn {
     my $iteminformation = GetItemIssue( GetItemnumberFromBarcode($barcode));
     my $biblio = GetBiblioItemData($iteminformation->{'biblioitemnumber'});
 #     use Data::Dumper;warn Data::Dumper::Dumper($iteminformation);  
+
+
+
     unless ($iteminformation->{'itemnumber'} ) {
         $messages->{'BadBarcode'} = $barcode;
         $doreturn = 0;
@@ -1440,6 +1443,7 @@ sub AddReturn {
     
     # update issues, thereby returning book (should push this out into another subroutine
         $borrower = C4::Members::GetMemberDetails( $iteminformation->{borrowernumber}, 0 );
+
     
     # case of a return of document (deal with issues and holdingbranch)
     
@@ -1570,7 +1574,15 @@ sub AddReturn {
 				$messages->{'NeedsTransfer'} = 1;
 			}
         }
+
+
     }
+
+        if ( $borrower->{'disable_reading_history'} ) {
+          my $rowsaffected = AnonymiseIssueHistory( 'CURDATE', $borrower->{'borrowernumber'} );
+          warn "Rows Affected: $rowsaffected"; 
+        }
+
     return ( $doreturn, $messages, $iteminformation, $borrower );
 }
 
