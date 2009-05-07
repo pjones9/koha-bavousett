@@ -124,6 +124,13 @@ if ($op eq "additem") {
     if ($exist_itemnumber) {
         $itemrecord = $record;
     }
+
+    if ( C4::Context->preference("NewItemsDefaultLocation") ) {
+      my $item = GetItem( $oldbibitemnum );
+      $item->{'permanent_location'} = $item->{'location'};
+      $item->{'location'} = C4::Context->preference("NewItemsDefaultLocation");
+      ModItem( $item, $oldbiblionumber, $oldbibitemnum );
+    }
 #-------------------------------------------------------------------------------
 } elsif ($op eq "edititem") {
 #-------------------------------------------------------------------------------
