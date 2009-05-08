@@ -32,6 +32,8 @@ use C4::Calendar;
 use C4::Accounts;
 use C4::ItemCirculationAlertPreference;
 use C4::Message;
+use C4::FinesOnReturn;
+
 use Date::Calc qw(
   Today
   Today_and_Now
@@ -1396,6 +1398,10 @@ sub AddReturn {
     my $validTransfert = 0;
     my $reserveDone = 0;
     
+    if ( C4::Context->preference("calcFineOnReturn") ) {
+       CreateFineOnReturn( $barcode );
+    }
+    
     # get information on item
     my $iteminformation = GetItemIssue( GetItemnumberFromBarcode($barcode));
     my $biblio = GetBiblioItemData($iteminformation->{'biblioitemnumber'});
@@ -2124,6 +2130,12 @@ sub AddRenewal {
     $sth->execute( $borrowernumber, $itemnumber );
     my $issuedata = $sth->fetchrow_hashref;
     $sth->finish;
+    
+    # If using FinesOnReturn, we need to create the fine before
+    # updating the issues row
+    if ( C4::Context->preference("calcFineOnReturn") ) {
+       CreateFineOnReturn( my $barcode, $itemnumber );
+    }
 
     # Update the issues record to have the new due date, and a new count
     # of how many times it has been renewed.
