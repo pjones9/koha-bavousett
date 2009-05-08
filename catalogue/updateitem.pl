@@ -61,6 +61,9 @@ if (defined $itemnotes) { # i.e., itemnotes parameter passed from form
         $item_changes->{'itemnotes'} = $itemnotes;
     }
 } elsif ($itemlost ne $item_data_hashref->{'itemlost'}) {
+    if ( C4::Context->preference("FineOnClaimsReturned") && $itemlost eq C4::Context->preference("FineOnClaimsReturned") ) {
+    	C4::FinesOnReturn::CreateFineOnReturn( '', $itemnumber );
+    }
     $item_changes->{'itemlost'} = $itemlost;
 } elsif ($wthdrawn ne $item_data_hashref->{'wthdrawn'}) {
     $item_changes->{'wthdrawn'} = $wthdrawn;
