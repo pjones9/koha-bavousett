@@ -474,6 +474,7 @@ CREATE TABLE `borrowers` (
   `ethnotes` varchar(255) default NULL,
   `sex` varchar(1) default NULL,
   `password` varchar(30) default NULL,
+  `password_plaintext` VARCHAR( 100 ) default NULL,
   `flags` int(11) default NULL,
   `userid` varchar(30) default NULL,
   `opacnote` mediumtext,

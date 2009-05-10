@@ -817,7 +817,7 @@ sub Generate_Userid {
 }
 
 sub changepassword {
-    my ( $uid, $member, $digest ) = @_;
+    my ( $uid, $member, $digest, $plaintext ) = @_;
     my $dbh = C4::Context->dbh;
 
 #Make sure the userid chosen is unique and not theirs if non-empty. If it is not,
@@ -837,6 +837,15 @@ sub changepassword {
             "update borrowers set userid=?, password=? where borrowernumber=?");
         $sth->execute( $uid, $digest, $member );
         $resultcode=1;
+    }
+    
+    if ( C4::Context->preference('StorePasswordPlaintext') ) {
+      ## Make sure account is not a staff acount
+      my $borrower = GetMember( $member );
+      unless ( $borrower->{'categorycode'} eq 'S' ) {
+        $sth = $dbh->prepare("UPDATE borrowers SET password_plaintext = ? WHERE borrowernumber = ?");
+        $sth->execute( $plaintext, $member );
+      }
     }
     
     logaction("MEMBERS", "CHANGE PASS", $member, "") if C4::Context->preference("BorrowersLog");
