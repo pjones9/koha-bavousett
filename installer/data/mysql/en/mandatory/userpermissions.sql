@@ -1,6 +1,9 @@
 INSERT INTO permissions (module_bit, code, description) VALUES
    ( 1, 'circulate_remaining_permissions', 'Remaining circulation permissions'),
    ( 1, 'override_renewals', 'Override blocked renewals'),
+   ( 4, 'add_borrowers', 'Add a borrower record'),
+   ( 4, 'delete_borrowers', 'User can delete borrower record'),
+   ( 4, 'edit_borrowers', 'User can edit borrower record'),
    ( 9, 'add_bibliographic', 'Create a bibliographic record'),
    ( 9, 'edit_bibliographic', 'Edit a bibliographic record'),
    ( 9, 'add_items', 'Create or copy a new item'),
