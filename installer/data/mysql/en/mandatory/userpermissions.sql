@@ -12,6 +12,9 @@ INSERT INTO permissions (module_bit, code, description) VALUES
    ( 9, 'add_items', 'Create or copy a new item'),
    ( 9, 'delete_items', 'Delete an item'),
    ( 9, 'edit_items', 'Edit an item record'),
+   (10, 'view_charges', 'View borrower charges'),
+   (10, 'add_charges', 'Add a charge to a patron record'),
+   (10, 'edit_charges', 'User can change a fee record');
    (13, 'edit_news', 'Write news for the OPAC and staff interfaces'),
    (13, 'label_creator', 'Create printable labels and barcodes from catalog and patron data'),
    (13, 'edit_calendar', 'Define days when the library is closed'),
