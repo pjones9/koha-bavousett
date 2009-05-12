@@ -1,6 +1,8 @@
 INSERT INTO permissions (module_bit, code, description) VALUES
    ( 1, 'circulate_remaining_permissions', 'Remaining circulation permissions'),
    ( 1, 'override_renewals', 'Override blocked renewals'),
+   ( 1, 'exempt_fines', 'User can activate exempt fines in Check In'),
+   ( 1, 'bookdrop', 'User can activate bookdrop mode in Check In'),
    ( 4, 'add_borrowers', 'Add a borrower record'),
    ( 4, 'delete_borrowers', 'User can delete borrower record'),
    ( 4, 'edit_borrowers', 'User can edit borrower record'),
