@@ -369,7 +369,9 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
                 <!-- TMPL_IF NAME="charges_is_blocker" -->
                     Checkouts are blocked because fine balance is over the limit.
                 <!-- /TMPL_IF -->
+            <!-- TMPL_IF NAME="CAN_user_updatecharges_accept_payment -->
             Make <a href="/cgi-bin/koha/members/pay.pl?borrowernumber=<!-- TMPL_VAR name="borrowernumber" -->">Payment</a></li>
+			<!-- /TMPL_IF -->
 			<!-- /TMPL_IF -->
 
         	<!-- TMPL_IF NAME="credits" -->
