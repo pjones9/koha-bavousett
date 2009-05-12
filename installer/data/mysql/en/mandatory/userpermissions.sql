@@ -15,6 +15,7 @@ INSERT INTO permissions (module_bit, code, description) VALUES
    (10, 'view_charges', 'View borrower charges'),
    (10, 'add_charges', 'Add a charge to a patron record'),
    (10, 'edit_charges', 'User can change a fee record');
+   (10, 'accept_payment', 'User can accept payment from a borrower');
    (13, 'edit_news', 'Write news for the OPAC and staff interfaces'),
    (13, 'label_creator', 'Create printable labels and barcodes from catalog and patron data'),
    (13, 'edit_calendar', 'Define days when the library is closed'),
