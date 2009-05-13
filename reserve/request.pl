@@ -125,11 +125,11 @@ if ($cardnumber) {
 
     if ( $number_reserves > C4::Context->preference('maxreserves') ) {
 		$warnings = 1;
-        $maxreserves = 1;
+		$maxreserves = 1;
     }
 
     if ( C4::Context->preference('MaxHoldsPerDay') ) {
-    	my $reserves_today = GetReserveCount( $borrowerinfo->{'borrowernumber'}, my $today = 1 );
+    	my $reserves_today = GetReserveCount( $borrowerinfo->{'borrowernumber'}, my $today = 1, my $shelf_holds_only = 1 );
 
     	if ( $reserves_today >= C4::Context->preference('MaxHoldsPerDay') ) {
           $warnings = 1;

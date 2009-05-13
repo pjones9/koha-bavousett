@@ -260,7 +260,7 @@ if ( scalar(@reserves) >= $MAXIMUM_NUMBER_OF_RESERVES ) {
 }
 
 if ( C4::Context->preference('MaxHoldsPerDay') ) {
-  my $reserves_today = GetReserveCount( $borrowernumber, my $today = 1 );
+  my $reserves_today = GetReserveCount( $borrowernumber, my $today = 1, my $shelf_holds_only = 1 );
                 
   if ( $reserves_today >= C4::Context->preference('MaxHoldsPerDay') ) {
     $noreserves = 1;
