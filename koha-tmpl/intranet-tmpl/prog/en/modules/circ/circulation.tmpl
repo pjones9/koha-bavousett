@@ -108,12 +108,18 @@ $.tablesorter.addParser({
 <!-- /TMPL_IF -->
 
 <!-- TMPL_IF NAME="TOO_MANY" -->
+<!-- TMPL_IF NAME="CAN_user_circulate_override_checkout_max" -->
     <li>Too many checked out (already checked out / max : <!-- TMPL_VAR name="TOO_MANY" -->)</li>
+<!-- /TMPL_IF -->
 <!-- /TMPL_IF -->
 
 <!-- TMPL_IF NAME="NOT_FOR_LOAN_FORCING" -->
     <li>Item is normally not for loan.  Check out anyway?</li>
 <!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="NO_MORE_RENEWALS_FORCING" -->
+     <li>No more renewals normally possible. Check out anyway?</li>
+<!-- /TMPL_IF -->
+
 </ul>
 
 <form method="post" action="/cgi-bin/koha/circ/circulation.pl">
@@ -202,6 +208,12 @@ $.tablesorter.addParser({
         <!-- TMPL_IF NAME="NOTSAMEBRANCH" -->
             <li>This item belongs to <!-- TMPL_VAR NAME="itemhomebranch" --> and cannot be issued from this location.</li>
         <!-- /TMPL_IF -->
+
+        <!-- TMPL_UNLESS NAME="CAN_user_circulate_override_checkout_max" -->
+        <!-- TMPL_IF NAME="TOO_MANY" -->
+            <li>Too many checked out (already checked out / max : <!-- TMPL_VAR name="TOO_MANY" -->)</li>
+        <!-- /TMPL_IF -->
+        <!-- /TMPL_UNLESS -->
         </ul>
 
     <!-- TMPL_IF NAME="memberofinstution" -->
@@ -369,7 +381,7 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
                 <!-- TMPL_IF NAME="charges_is_blocker" -->
                     Checkouts are blocked because fine balance is over the limit.
                 <!-- /TMPL_IF -->
-            <!-- TMPL_IF NAME="CAN_user_updatecharges_accept_payment -->
+            <!-- TMPL_IF NAME="CAN_user_updatecharges_accept_payment" -->
             Make <a href="/cgi-bin/koha/members/pay.pl?borrowernumber=<!-- TMPL_VAR name="borrowernumber" -->">Payment</a></li>
 			<!-- /TMPL_IF -->
 			<!-- /TMPL_IF -->

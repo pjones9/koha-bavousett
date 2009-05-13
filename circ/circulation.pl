@@ -86,7 +86,7 @@ my ( $template, $loggedinuser, $cookie ) = get_template_and_user (
         query           => $query,
         type            => "intranet",
         authnotrequired => 0,
-        flagsrequired   => { circulate => 'circulate_remaining_permissions' },
+        flagsrequired   => { circulate => '*' },
     }
 );
 
@@ -278,6 +278,8 @@ if ($barcode) {
   my $blocker = $invalidduedate ? 1 : 0;
 
   delete $question->{'DEBT'} if ($debt_confirmed);
+  granular_overrides($template, $error, $question);
+
   foreach my $impossible ( keys %$error ) {
             $template->param(
                 $impossible => $$error{$impossible},
@@ -711,3 +713,31 @@ $template->param(
     DHTMLcalendar_dateformat  => C4::Dates->DHTMLcalendar(),
 );
 output_html_with_http_headers $query, $cookie, $template->output;
+
+
+sub granular_overrides {
+    my ($template, $error, $question) = @_;
+    if ($question->{TOO_MANY} ) {
+        my $check_granular = $template->param('CAN_user_circulate_override_checkout_max');
+        if (!$check_granular) {
+            $error->{TOO_MANY} = $question->{TOO_MANY};
+            delete $question->{TOO_MANY};
+        }
+    }
+    if ($question->{NOT_FOR_LOAN_FORCING} ) {
+        my $check_granular = $template->param('CAN_user_circulate_override_non_circ');
+        if (!$check_granular) {
+            $error->{NOT_FOR_LOAN} = $question->{NOT_FOR_LOAN_FORCING};
+            delete $question->{NOT_FOR_LOAN_FORCING};
+        }
+    }
+    if ($error->{NO_MORE_RENEWALS} ) {
+        my $check_granular = $template->param('CAN_user_circulate_override_max_renewals');
+        if ($check_granular) {
+            $question->{NO_MORE_RENEWALS_FORCING} = $error->{NO_MORE_RENEWALS};
+            delete $error->{NO_MORE_RENEWALS};
+        }
+    }
+
+    return;
+}
