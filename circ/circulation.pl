@@ -220,7 +220,7 @@ if ($findborrower) {
 
 # get the borrower information.....
 my $borrower;
-my @lines;
+#my @lines;
 if ($borrowernumber) {
     $borrower = GetMemberDetails( $borrowernumber, 0 );
     my ( $od, $issue, $fines ) = GetMemberIssuesAndFines( $borrowernumber );
@@ -232,9 +232,12 @@ if ($borrowernumber) {
     my ( $enrol_year, $enrol_month, $enrol_day ) = split /-/,
       $borrower->{'dateenrolled'};
     # Renew day is calculated by adding the enrolment period to today
-    my ( $renew_year, $renew_month, $renew_day ) =
-      Add_Delta_YM( $enrol_year, $enrol_month, $enrol_day,
-        0 , $borrower->{'enrolmentperiod'}) if ($enrol_year*$enrol_month*$enrol_day>0);
+    my ( $renew_year, $renew_month, $renew_day );
+    if ($enrol_year*$enrol_month*$enrol_day>0) {
+        ( $renew_year, $renew_month, $renew_day ) =
+        Add_Delta_YM( $enrol_year, $enrol_month, $enrol_day,
+            0 , $borrower->{'enrolmentperiod'});
+    }
     # if the expiry date is before today ie they have expired
     if ( $warning_year*$warning_month*$warning_day==0 
       || Date_to_Days( $today_year, $today_month, $today_day ) 
@@ -544,9 +547,8 @@ if ($borrowerslist) {
 
 #title
 my $flags = $borrower->{'flags'};
-my $flag;
 
-foreach $flag ( sort keys %$flags ) {
+foreach my $flag ( sort keys %$flags ) {
     $template->param( flagged=> 1);
     $flags->{$flag}->{'message'} =~ s#\n#<br />#g;
     if ( $flags->{$flag}->{'noissues'} ) {
