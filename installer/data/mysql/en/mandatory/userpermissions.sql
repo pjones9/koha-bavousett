@@ -17,6 +17,7 @@ INSERT INTO permissions (module_bit, code, description) VALUES
    ( 6, 'delete_holds', 'User can delete hold requests from circulation'),
    ( 6, 'edit_holds', 'User can edit hold requests'),
    ( 6, 'view_holds', 'User can view hold requests'),
+   ( 6, 'reorder_holds', 'User can reorder hold requests'),
    ( 9, 'add_bibliographic', 'Create a bibliographic record'),
    ( 9, 'edit_bibliographic', 'Edit a bibliographic record'),
    ( 9, 'add_items', 'Create or copy a new item'),
