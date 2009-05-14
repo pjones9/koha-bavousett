@@ -8,6 +8,7 @@ INSERT INTO permissions (module_bit, code, description) VALUES
    ( 1, 'override_max_renewals', 'User can override the maximum renewals check'),
    ( 1, 'override_max_fines', 'User can override block for patron over max fine limit'),
    ( 1, 'change_lost_status', 'User can set the item lost status'),
+   ( 1, 'view_borrower_name_in_checkin', 'User can see the borrower name in Check In'),
    ( 4, 'add_borrowers', 'Add a borrower record'),
    ( 4, 'delete_borrowers', 'User can delete borrower record'),
    ( 4, 'edit_borrowers', 'User can edit borrower record'),

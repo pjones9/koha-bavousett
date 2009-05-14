@@ -375,9 +375,13 @@ function Dopop(link) {
             <td><a href="/cgi-bin/koha/catalogue/moredetail.pl?biblionumber=<!-- TMPL_VAR NAME="itembiblionumber" -->&amp;itemnumber=<!-- TMPL_VAR NAME="itemnumber" -->#item<!-- TMPL_VAR NAME="itemnumber" -->"><!-- TMPL_VAR Name="barcode" --></a></td>
             <td><!-- TMPL_VAR Name="itemtype" --> <!-- TMPL_VAR Name="ccode" --></td>
 			<td><!-- TMPL_IF Name="duedate" -->
+            <!-- TMPL_IF NAME="CAN_user_circulate_view_borrower_name_in_checkin" -->
                 <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=<!-- TMPL_VAR Name="borrowernumber" -->">
                     <!-- TMPL_VAR Name="borsurname" -->, <!-- TMPL_VAR Name="borfirstname" --> (<!-- TMPL_VAR name="borcategorycode" -->)
                 </a>
+            <!-- TMPL_ELSE --> <!-- not allowed to see name so no link either -->
+            <!-- TMPL_VAR NAME="borcnum" -->
+            <!-- /TMPL_IF -->
             <!-- TMPL_ELSE -->Not checked out<!-- /TMPL_IF --></td>
             <td><!-- TMPL_IF name="bornote" --><span class="circ-hlt"><!-- TMPL_VAR name="bornote" --><br /></span><!-- /TMPL_IF -->
             <!-- TMPL_IF name="itemnote" --><span class="circ-hlt"><!-- TMPL_VAR name="itemnote" --></span><!-- /TMPL_IF -->
