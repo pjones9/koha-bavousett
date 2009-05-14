@@ -10,6 +10,8 @@ INSERT INTO permissions (module_bit, code, description) VALUES
    ( 4, 'add_borrowers', 'Add a borrower record'),
    ( 4, 'delete_borrowers', 'User can delete borrower record'),
    ( 4, 'edit_borrowers', 'User can edit borrower record'),
+   ( 4, 'edit_borrower_circnote', 'User can edit the contents of the borrower circulation note'),
+   ( 4, 'edit_borrower_opacnote', 'User can edit the contents of the borrower opac note'),
    ( 6, 'delete_holds', 'User can delete hold requests from circulation'),
    ( 6, 'edit_holds', 'User can edit hold requests'),
    ( 6, 'view_holds', 'User can view hold requests'),
