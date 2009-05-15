@@ -2463,6 +2463,8 @@ CREATE TABLE `messages` (
   `branchcode` varchar(4) default NULL,
   `message_type` varchar(1) NOT NULL,
   `message` text NOT NULL,
+  `message_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`message_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
