@@ -1443,7 +1443,9 @@ sub AddReturn {
     
     # update issues, thereby returning book (should push this out into another subroutine
         $borrower = C4::Members::GetMemberDetails( $iteminformation->{borrowernumber}, 0 );
-
+        if ( C4::Context->preference('AllowReadingHistoryAnonymizing') && $borrower->{'disable_reading_history'} ) {
+          AnonymiseIssueHistory( '', $borrower->{'borrowernumber'} );
+        }
     
     # case of a return of document (deal with issues and holdingbranch)
     
@@ -2377,13 +2379,21 @@ sub AnonymiseIssueHistory {
     my $date           = shift;
     my $borrowernumber = shift;
     my $dbh            = C4::Context->dbh;
+    
+    if ( $date ) {
+      $date = "'$date'";
+    } else {
+      $date = "DATE( NOW() )";
+    }
+    
     my $query          = "
         UPDATE old_issues
         SET    borrowernumber = NULL
-        WHERE  returndate < '".$date."'
-          AND borrowernumber IS NOT NULL
+        WHERE  returndate < $date
+        AND borrowernumber IS NOT NULL
     ";
-    $query .= " AND borrowernumber = '".$borrowernumber."'" if defined $borrowernumber;
+    $query .= " AND borrowernumber = '$borrowernumber'" if defined $borrowernumber;
+    warn "ASDF $query";
     my $rows_affected = $dbh->do($query);
     return $rows_affected;
 }
