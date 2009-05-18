@@ -739,6 +739,7 @@ sub AddMember {
       . ",B_phone="     . $dbh->quote( $data{'B_phone'} )
       . ",B_email="     . $dbh->quote( $data{'B_email'} )
       . ",password="    . $dbh->quote( $data{'password'} )
+      . ",password_plaintext="    . $dbh->quote( $data{'password_plaintext'} )
       . ",userid="      . $dbh->quote( $data{'userid'} )
       . ",sort1="       . $dbh->quote( $data{'sort1'} )
       . ",sort2="       . $dbh->quote( $data{'sort2'} )
