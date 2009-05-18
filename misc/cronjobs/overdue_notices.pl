@@ -49,7 +49,6 @@ overdue_notices.pl [ -n ] [ -library <branchcode> ] [ -max <number of days> ] [ 
    -help                          brief help message
    -man                           full documentation
    -n                             No email will be sent
-   -skipmail                      Accounts with email address will be ignored.
    -max          <days>           maximum days overdue to deal with
    -library      <branchname>     only deal with overdues from this library
    -csv          <filename>       populate CSV file
@@ -229,7 +228,6 @@ my $help    = 0;
 my $man     = 0;
 my $verbose = 0;
 my $nomail  = 0;
-my $skipmail = 0;
 my $MAX     = 90;
 my $mybranch;
 my $csvfilename;
@@ -242,7 +240,6 @@ GetOptions(
     'help|?'         => \$help,
     'man'            => \$man,
     'v'              => \$verbose,
-    'skipmail'	     => \$skipmail,
     'n'              => \$nomail,
     'max=s'          => \$MAX,
     'library=s'      => \$mybranch,
@@ -458,7 +455,7 @@ END_SQL
                         }
                       );
                 } else {
-                    if ( $email && !$skipmail ) {
+                    if ($email) {
                         C4::Letters::EnqueueLetter(
                             {   letter                 => $letter,
                                 borrowernumber         => $borrowernumber,
@@ -484,7 +481,7 @@ END_SQL
                                 titles         => $titles,
                                 outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                             }
-                          ) unless $skipmail;
+                          );
                     }
                 }
             }
