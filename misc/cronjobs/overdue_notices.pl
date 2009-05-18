@@ -499,7 +499,11 @@ END_SQL
                 local $, = "\f";    # pagebreak
                 print @output_chunks;
             }
-        } else {
+        } 
+        elsif ( defined $htmlfilename ) {
+            print $html_fh @output_chunks;        
+        }
+        else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
                 type => 'text/plain',
