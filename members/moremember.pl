@@ -47,6 +47,7 @@ use C4::Letters;
 use C4::Biblio;
 use C4::Reserves;
 use C4::Branch; # GetBranchName
+use Date::Calc qw(Add_Delta_Days);
 
 #use Smart::Comments;
 #use Data::Dumper;
@@ -276,6 +277,14 @@ if ($borrowernumber) {
 				$getreserv{$_} = 0;
 		}
         $getreserv{reservedate}  = C4::Dates->new($num_res->{'reservedate'},'iso')->output('syspref');
+        if ($num_res->{'found'} eq 'W') {
+          my ($waitingyear,$waitingmonth,$waitingday) = split(/-/,$num_res->{'waitingdate'});
+          my ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($waitingyear,$waitingmonth,$waitingday,C4::Context->preference('ReservesMaxPickUpDelay'));
+          $getreserv{holdexpdate} = sprintf "%02d/%02d/%04d",$holdexpmonth,$holdexpday,$holdexpyear;
+        }
+        else {
+          $getreserv{holdexpdate} = '';
+        }
 		foreach (qw(biblionumber title author itemcallnumber )) {
 				$getreserv{$_} = $getiteminfo->{$_};
 		}

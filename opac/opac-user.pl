@@ -31,6 +31,7 @@ use C4::Items;
 use C4::Dates qw/format_date/;
 use C4::Letters;
 use C4::Branch; # GetBranches
+use Date::Calc qw(Add_Delta_Days);
 
 my $query = new CGI;
 
@@ -177,6 +178,14 @@ $template->param( branchloop => \@branch_loop, "mylibraryfirst"=>C4::Context->pr
 my @reserves  = GetReservesFromBorrowernumber( $borrowernumber );
 foreach my $res (@reserves) {
     $res->{'reservedate'} = format_date( $res->{'reservedate'} );
+    if ($res->{'found'} eq 'W') {
+      my ($waitingyear,$waitingmonth,$waitingday) = split(/-/,$res->{'waitingdate'});
+      my ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($waitingyear,$waitingmonth,$waitingday,C4::Context->preference('ReservesMaxPickUpDelay'));
+      $res->{'holdexpdate'} = sprintf "%02d/%02d/%04d",$holdexpmonth,$holdexpday,$holdexpyear;
+    }
+    else {
+      $res->{'holdexpdate'} = '';
+    }
     my $publictype = $res->{'publictype'};
     $res->{$publictype} = 1;
     $res->{'waiting'} = 1 if $res->{'found'} eq 'W';
