@@ -62,8 +62,12 @@ if (defined $itemnotes) { # i.e., itemnotes parameter passed from form
         $item_changes->{'itemnotes'} = $itemnotes;
     }
 } elsif ($itemlost ne $item_data_hashref->{'itemlost'}) {
+#warn "updateitem.pl: Checking to see if FineOnClaimsReturned is on: ";
     if ( C4::Context->preference("FineOnClaimsReturned") && $itemlost eq C4::Context->preference("FineOnClaimsReturned") ) {
+#warn "updateitem.pl: FineOnClaimsReturned is on. Running FinesOnReturn::CreateFineOnReturn( '', $itemnumber );";
     	my $borrowernumber = C4::FinesOnReturn::CreateFineOnReturn( '', $itemnumber );
+#warn "updateitem.pl: Recieved borrowernumber $borrowernumber from FinesOnReturn::CreateFineOnReturn.";
+#warn "updateitem.pl: Running UpdateStats( C4::Context->userenv->{branch}, 'claims_returned', my $amount, my $other, $itemnumber, $item_data_hashref->{'itemtype'}, $borrowernumber );";
     	UpdateStats( C4::Context->userenv->{branch}, 'claims_returned', my $amount, my $other, $itemnumber, $item_data_hashref->{'itemtype'}, $borrowernumber );
     }
     $item_changes->{'itemlost'} = $itemlost;

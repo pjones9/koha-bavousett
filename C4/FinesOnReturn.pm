@@ -67,10 +67,14 @@ sub CalculateFine {
   my $maxFine = C4::Context->preference('MaxFine');
   my ( $itembarcode, $itemnumber, $future_date ) = @_;
 
+  warn "C4::FinesOnReturn::CalculateFine( \$itembarcode = $itembarcode, \$itemnumber = $itemnumber, \$future_date = $future_date )";
+  warn "C4::FinesOnReturn::CalculateFine: \$maxFine = $maxFine";
+
   my $return_date = sprintf("%04d-%02d-%02d", (localtime(time))[5] + 1900, (localtime(time))[4] + 1, (localtime(time))[3]);
   if ( $future_date ) {
     $return_date = $future_date;
   }
+  warn "C4::FinesOnReturn::CalculateFine: \$return_date = $return_date";
 
   my $dbh = C4::Context->dbh;
 
@@ -79,8 +83,10 @@ sub CalculateFine {
 
   if ( ( $fineData->{'replacementprice'} > 0 ) && ( $fineData->{'replacementprice'} < $maxFine ) ) {
     $maxFine = $fineData->{'replacementprice'};
+    warn "C4::FinesOnReturn::CalculateFine: \$maxFine = $maxFine, updated to replacementprice";
   }
 
+  warn "C4::FinesOnReturn::CalculateFine: Days Overdue: " . $fineData->{'days_overdue'};
   if ( $fineData->{'days_overdue'} < 1 ) { return 0; } ## Short circuit for speed
 
   my $issuing_rule = _GetIssuingRule( $fineData->{'categorycode'}, $fineData->{'itemtype'}, $fineData->{'holdingbranch'} );
@@ -101,10 +107,11 @@ sub CalculateFine {
 ## NOTE: This function should be run right before an item is returned or renewed.
 sub CreateFineOnReturn {
   my ( $itembarcode, $itemnumber ) = @_;
-
+warn "C4::FinesOnReturn::CreateFinesOnReturn( \$itembarcode = $itembarcode, \$itemnumber = $itemnumber )";
   my $dbh = C4::Context->dbh;
 
   my $amount = CalculateFine( $itembarcode, $itemnumber );
+warn "C4::FinesOnReturn::CreateFinesOnReturn: \$amount = $amount = CalculateFine( \$itembarcode = $itembarcode, \$itemnumber = $itemnumber )";
 
   my $fineData;
   if ( $amount > 0 ) {
@@ -151,7 +158,7 @@ sub _CreateFine {
 ## $future_date is an optional date ( YYYY-MM-DD ) for estimating a fine in the future.
 sub _GetFineData {
   my ( $itembarcode, $itemnumber, $future_date ) = @_;
-
+warn "C4::FinesOnReturn::_GetFineData( \$itembarcode = $itembarcode, \$itemnumber = $itemnumber, \$future_data = $future_date )";
   my $diff_date = "NOW()";
   if ( $future_date ) {
     $diff_date = "DATE( $future_date )";
@@ -183,12 +190,13 @@ sub _GetFineData {
           AND biblioitems.itemtype = itemtypes.itemtype
           AND issues.returndate IS NULL
            ";
-
   if ( $itembarcode ) {
     $sql .= "AND items.barcode = ?";
   } else {
     $sql .= "AND items.itemnumber = ?";
   }
+
+warn "C4::FinesOnReturn::_GetFineData: SQL: $sql";
 
   my $sth = $dbh->prepare( $sql );
 
@@ -199,6 +207,10 @@ sub _GetFineData {
   }
 
   my $fineData = $sth->fetchrow_hashref();
+
+for my $key ( keys %$fineData ) {
+  warn "C4::FinesOnReturn::_GetFineData: $key => " . $fineData->{"$key"};
+}
 
   return $fineData;
 }
@@ -234,6 +246,8 @@ sub _GetIssuingRule {
 sub _CheckForIssuingRule {
   my ( $categorycode, $itemtype, $branchcode ) = @_;
 
+warn "C4::FinesOnReturn::_CheckForIssuingRule( \$categorycode = $categorycode, \$itemtype = $itemtype, \$branchcode = $branchcode )";
+
   if ( ! $categorycode ) { $categorycode = "*"; }
   if ( ! $itemtype ) { $itemtype = "*"; }
   if ( ! $branchcode ) { $branchcode = "*"; }
@@ -241,12 +255,21 @@ sub _CheckForIssuingRule {
   my $dbh = C4::Context->dbh;
 
   my $sql = "SELECT * FROM issuingrules WHERE categorycode LIKE ? AND itemtype LIKE ? AND branchcode LIKE ?";
-
+warn "C4::FinesOnReturn::_CheckForIssuingRule: SELECT * FROM issuingrules WHERE categorycode LIKE '$categorycode' AND itemtype LIKE '$itemtype' AND branchcode LIKE '$branchcode'";
   my $sth = $dbh->prepare( $sql );
 
   $sth->execute( $categorycode, $itemtype, $branchcode );
 
   my $issuingrule = $sth->fetchrow_hashref();
+
+if ( $issuingrule ) {
+  warn "C4::FinesOnReturn::_CheckForIssuingRule: Found Issuing Rule: ";
+  for my $key ( keys %$issuingrule ) {
+    warn "C4::FinesOnReturn::_CheckForIssuingRule: $key => " . $issuingrule->{"$key"};
+  }
+} else {
+  warn "C4::FinesOnReturn::_CheckForIssuingRule: No Issuing Rule Found";
+}
 
   return $issuingrule;
 }
