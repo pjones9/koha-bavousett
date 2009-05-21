@@ -106,11 +106,14 @@ sub CreateFineOnReturn {
 
   my $amount = CalculateFine( $itembarcode, $itemnumber );
 
+  my $fineData;
   if ( $amount > 0 ) {
-     my $fineData = _GetFineData( $itembarcode, $itemnumber );
+     $fineData = _GetFineData( $itembarcode, $itemnumber );
      my $description = " $fineData->{'itemcallnumber'} : ( $fineData->{'barcode'} ) Issued: $fineData->{'issuedate'}, Due: $fineData->{'date_due'}, Returned: $fineData->{'date_returned'}";
      _CreateFine( $fineData->{'itemnumber'}, $fineData->{'borrowernumber'}, $amount, my $type = 'F', $description );
   }
+  
+  return $fineData->{'borrowernumber'};
 }
 
 ## Function _CreateFine
