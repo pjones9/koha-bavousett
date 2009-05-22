@@ -350,7 +350,7 @@ sub GetReserveCount {
 
     if ( $shelf_holds_only ) {
       $query = "
-        SELECT COUNT(*) FROM items
+        SELECT COUNT(*) as counter FROM items
         LEFT JOIN issues ON issues.itemnumber = items.itemnumber
         LEFT JOIN reserves ON reserves.biblionumber = items.biblionumber
         WHERE issues.timestamp IS NULL
@@ -366,7 +366,6 @@ sub GetReserveCount {
     my $row = $sth->fetchrow_hashref;
 
     my $res_count = $row->{counter};
-    
     
     return $res_count;
 }
