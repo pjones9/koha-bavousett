@@ -56,6 +56,7 @@ my $parse_items = $input->param('parse_items');
 my $item_action = $input->param('item_action');
 my $comments = $input->param('comments');
 my $syntax = $input->param('syntax');
+my $new_profile_name = $input->param('new_profile_name');
 my ($template, $loggedinuser, $cookie)
 	= get_template_and_user({template_name => "tools/stage-marc-import.tmpl",
 					query => $input,
@@ -89,6 +90,12 @@ if ($completedJobID) {
     my $job = undef;
     my $staging_callback = sub { };
     my $matching_callback = sub { };
+
+	if ($new_profile_name) {
+		$new_profile_name =~ s/^\s+|\s+$//g;
+		AddImportProfile( $new_profile_name, $matcher_id, undef, $overlay_action, $nomatch_action, $parse_items, $item_action );
+	}
+
     if ($runinbackground) {
         my $job_size = () = $marcrecord =~ /\035/g;
         # if we're matching, job size is doubled
@@ -166,20 +173,14 @@ if ($completedJobID) {
         matcher_code => $matcher_code,
         import_batch_id => $batch_id
     };
+
+	$results->{'saved_profile'} = $new_profile_name if ($new_profile_name);
+
     if ($runinbackground) {
         $job->finish($results);
     } else {
-	    $template->param(staged => $num_valid,
- 	                     matched => $num_with_matches,
-                         num_items => $num_items,
-                         import_errors => scalar(@import_errors),
-                         total => $num_valid + scalar(@import_errors),
-                         checked_matches => $checked_matches,
-                         matcher_failed => $matcher_failed,
-                         matcher_code => $matcher_code,
-                         import_batch_id => $batch_id
-                        );
-    }
+	    $template->param($results);
+	}
 
 } else {
     # initial form
@@ -187,7 +188,10 @@ if ($completedJobID) {
         $template->param("UNIMARC" => 1);
     }
     my @matchers = C4::Matcher::GetMatcherList();
-    $template->param(available_matchers => \@matchers);
+    $template->param(
+		available_matchers => \@matchers,
+		available_profiles => GetImportProfileLoop(),
+	);
 }
 
 output_html_with_http_headers $input, $cookie, $template->output;

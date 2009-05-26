@@ -66,6 +66,9 @@ BEGIN {
     SetImportRecordStatus
     GetImportRecordMatches
     SetImportRecordMatches
+    AddImportProfile
+    GetImportProfile
+    GetImportProfileLoop
 	);
 }
 
@@ -1219,6 +1222,57 @@ sub SetImportRecordMatches {
     }
 }
 
+sub AddImportProfile {
+    my ($description, $matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action) = @_;
+
+    my $dbh = C4::Context->dbh;
+
+    my $profile_id = $dbh->selectrow_array("SELECT profile_id FROM import_profiles WHERE description = ?", {}, $description);
+
+    my $sth;
+
+    if ($profile_id) {
+        $sth = $dbh->prepare("
+            UPDATE
+              import_profiles
+              SET matcher_id = ?, template_id = ?, overlay_action = ?, nomatch_action = ?, parse_items = ?, item_action = ?
+              WHERE profile_id = ?
+        ");
+
+        $sth->execute($matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action, $profile_id);
+    } else {
+        $sth = $dbh->prepare("
+            INSERT
+              INTO import_profiles(description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $sth->execute($description, $matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action);
+    }
+}
+
+sub GetImportProfile {
+    my $profile_id = shift;
+
+    my $dbh = C4::Context->dbh;
+
+    return $dbh->selectrow_hashref( "
+        SELECT
+          description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action
+          FROM import_profiles
+          WHERE profile_id = ?
+    ", {}, $profile_id );
+}
+
+sub GetImportProfileLoop {
+    my $dbh = C4::Context->dbh;
+
+    return $dbh->selectall_arrayref( "
+        SELECT
+          profile_id, description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action
+          FROM import_profiles
+    ", { Slice => {} } );
+}
 
 # internal functions
 

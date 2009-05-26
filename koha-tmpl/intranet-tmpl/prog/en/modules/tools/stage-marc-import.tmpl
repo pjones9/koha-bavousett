@@ -24,6 +24,37 @@ function CheckForm(f) {
     return false;
 }
 
+<!-- TMPL_IF NAME="available_profiles" -->
+
+var available_profiles = {
+  <!-- TMPL_LOOP NAME="available_profiles" -->
+  <!-- TMPL_VAR NAME="profile_id" -->: {
+    matcher_id: "<!-- TMPL_VAR NAME="matcher_id" -->", 
+    overlay_action: "<!-- TMPL_VAR NAME="overlay_action" -->", 
+    nomatch_action: "<!-- TMPL_VAR NAME="nomatch_action" -->", 
+    parse_items: "<!-- TMPL_VAR NAME="parse_items" -->",
+    item_action: "<!-- TMPL_VAR NAME="item_action" -->"
+  }<!-- TMPL_UNLESS NAME="__last__" -->,<!-- /TMPL_UNLESS -->
+  <!-- /TMPL_LOOP -->
+};
+
+$(document).ready(function(){
+  $('#profile').change(function(){
+    var profile = $(this).val();
+
+    if (!profile) return;
+
+    profile = available_profiles[profile];
+
+    $('#matcher').val(profile.matcher_id);
+    $('#overlay_action').val(profile.overlay_action);
+    $('#nomatch_action').val(profile.nomatch_action);
+    $('#parse_items' + (profile.parse_items ? 'yes' : 'no')).val(['parse_items']);
+    $('#item_action').val(profile.item_action);
+  });
+});
+
+<!-- /TMPL_IF -->
 //]]>
 </script>
 </head>
@@ -43,6 +74,7 @@ function CheckForm(f) {
 <!-- TMPL_IF name="uploadmarc" -->
 <p>MARC Staging results :</p>
 <ul>
+  <!-- TMPL_IF NAME="saved_profile" --><li>Saved settings as profile "<!-- TMPL_VAR NAME="saved_profile" -->"</li><!-- /TMPL_IF -->
 	<li><!-- TMPL_VAR name="total" -->  records in file</li>
 	<li><!-- TMPL_VAR name="import_errors" --> records not staged because of MARC error</li>
 	<li><!-- TMPL_VAR name="staged" --> records staged</li>
@@ -105,6 +137,28 @@ function CheckForm(f) {
 		
 	</li>
 </ol></fieldset>
+  <fieldset class="rows">
+    <legend>Import profiles</legend>
+    <ol>
+      <!-- TMPL_IF NAME="available_profiles" -->
+        <li>
+          <label for="profile">Use import profile:</label>
+          <select name="profile" id="profile">
+            <option value="">--</option>
+            <!-- TMPL_LOOP NAME="available_profiles" -->
+              <option value="<!-- TMPL_VAR NAME="profile_id" -->"><!-- TMPL_VAR NAME="description" --></option>
+            <!-- /TMPL_LOOP -->
+          </select>
+        </li>
+      <!-- /TMPL_IF -->
+      <p>
+      </p>
+      <li>
+        <label for="new_profile_name">Save these settings as an import profile named:</label>
+        <input type="text" name="new_profile_name" id="new_profile_name" value="" />
+      </li>
+    </ol>
+  </fieldset>
   <fieldset class="rows">
     <legend>Look for existing records in catalog?</legend>
     <ol><li><label for="matcher">Record matching rule:</label>
