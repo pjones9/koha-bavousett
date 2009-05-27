@@ -1581,7 +1581,7 @@ sub AddReturn {
     }
 
         if ( $borrower->{'disable_reading_history'} ) {
-          my $rowsaffected = AnonymiseIssueHistory( 'CURDATE', $borrower->{'borrowernumber'} );
+          my $rowsaffected = AnonymiseIssueHistory( '', $borrower->{'borrowernumber'} );
           warn "Rows Affected: $rowsaffected"; 
         }
 
@@ -2380,20 +2380,16 @@ sub AnonymiseIssueHistory {
     my $borrowernumber = shift;
     my $dbh            = C4::Context->dbh;
     
-    if ( $date ) {
-      $date = "'$date'";
-    } else {
-      $date = "DATE( NOW() )";
-    }
-    
-    my $query          = "
+    unless ( $date || $borrowernumber ) { return 0; } ## For safety
+
+    my $query = "
         UPDATE old_issues
         SET    borrowernumber = NULL
-        WHERE  returndate < $date
-        AND borrowernumber IS NOT NULL
+        WHERE  borrowernumber IS NOT NULL
     ";
-    $query .= " AND borrowernumber = '$borrowernumber'" if defined $borrowernumber;
-    warn "ASDF $query";
+    $query .= " AND returndate < '$date' " if ( $date );
+    $query .= " AND borrowernumber = '$borrowernumber' " if defined $borrowernumber;
+    warn "AnonymiseIssueHistory: $query";
     my $rows_affected = $dbh->do($query);
     return $rows_affected;
 }
