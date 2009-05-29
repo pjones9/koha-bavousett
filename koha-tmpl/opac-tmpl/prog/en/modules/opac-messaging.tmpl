@@ -28,84 +28,10 @@
 <h3><a href="/cgi-bin/koha/opac-user.pl"><!-- TMPL_VAR NAME="firstname" --> <!-- TMPL_VAR NAME="surname" -->'s account</a> <img src="<!-- TMPL_VAR NAME="themelang" -->../../images/caret.gif" width="16" height="16" alt="&gt;" border="0" /> Your Messaging Settings</h3>
 <!-- /TMPL_LOOP -->
 
-<form action="/cgi-bin/koha/opac-messaging.pl" method="get" name="opacmessaging">
-<input type="hidden" name="modify" value="yes" />
+<P>
+Individual messaging options are not available at this time.  By default, hold and overdue notices will be sent to your email address; please make sure your library user account has a valid address.  If you do not have email, some notices will be sent by regular mail, but log into your account regularly to check status of fines, holds, and overdues.
+</p>
 
-<fieldset class="rows">
-  <!-- TMPL_IF NAME="settings_updated" -->
-  <div class="dialog message"><h3>Settings Updated</h3></div>
-  <!-- /TMPL_IF -->
-  <table style="margin-right:1em;">
-    <tr><th>&nbsp;</th><th>Days in advance</th><!-- TMPL_IF NAME="SMSSendDriver" --><th>SMS</th><!-- /TMPL_IF --><th>Email</th><th>Digests only?</th><!-- <th>RSS</th> --><th>Do not notify</th></tr>
-    <!-- TMPL_LOOP name="messaging_preferences" -->
-    <tr>
-      <td><!-- TMPL_VAR NAME="message_name" --></td>
-      <!-- TMPL_IF NAME="takes_days" -->
-      <td><select name="<!-- TMPL_VAR NAME="message_attribute_id" -->-DAYS">
-          <!-- TMPL_LOOP name="select_days" -->
-          <!-- TMPL_IF NAME="selected" --><option value="<!-- TMPL_VAR NAME="day" -->" selected="selected"><!-- TMPL_VAR NAME="day" --></option>
-          <!-- TMPL_ELSE --><option value="<!-- TMPL_VAR NAME="day" -->"><!-- TMPL_VAR NAME="day" --></option>
-<!-- /TMPL_IF -->
-          <!-- /TMPL_LOOP -->
-        </select>
-      </td>
-      <!-- TMPL_ELSE -->
-      <td>-</td>
-      <!-- /TMPL_IF -->
-      <!-- TMPL_IF NAME="transport-sms" -->
-      <!-- TMPL_IF NAME="SMSSendDriver" --><td><input type="checkbox"
-                 id="sms<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 name="<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 value="sms" <!-- TMPL_VAR NAME="transport-sms"   --> onclick = "document.opacmessaging.none<!-- TMPL_VAR NAME="message_attribute_id" -->.checked=false;" /><!-- /TMPL_IF -->
-      </td>
-      <!-- TMPL_ELSE -->
-      <td>-</td>
-      <!-- /TMPL_IF -->
-
-      <!-- TMPL_IF NAME="transport-email" -->
-      <td><input type="checkbox"
-                 id="email<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 name="<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 value="email"   <!-- TMPL_VAR NAME="transport-email"   --> onclick = "document.opacmessaging.none<!-- TMPL_VAR NAME="message_attribute_id" -->.checked=false;" />
-      </td>
-      <!-- TMPL_ELSE -->
-      <td>-</td>
-      <!-- /TMPL_IF -->
-
-      <!-- TMPL_IF NAME="has_digest" -->
-      <td><input type="checkbox"
-                 id="digest<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 value="<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 name="digest"   <!-- TMPL_VAR NAME="digest" --> onclick = "document.opacmessaging.none<!-- TMPL_VAR NAME="message_attribute_id" -->.checked=false;" />
-      </td>
-      <!-- TMPL_ELSE -->
-      <td>-</td>
-      <!-- /TMPL_IF -->
-
-<!--       <!-- TMPL_IF NAME="transport-rss" -->
-      <td><input type="checkbox"
-                 id="rss<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 name="<!-- TMPL_VAR NAME="message_attribute_id" -->"
-                 value="rss"  <!-- TMPL_VAR NAME="transport-rss"   --> onclick = "document.opacmessaging.none<!-- TMPL_VAR NAME="message_attribute_id" -->.checked=false;" />
-      </td>
-      <!-- TMPL_ELSE -->
-      <td>-</td>
-      <!-- /TMPL_IF --> -->
-
-      <td><input type="checkbox" class="none" id="none<!-- TMPL_VAR NAME="message_attribute_id" -->" /></td>
-    </tr>
-    <!-- /TMPL_LOOP -->
-  </table>
-<!-- TMPL_IF NAME="SMSSendDriver" --><ol><li><label for="SMSnumber">SMS number:</label> <input type="text" id="SMSnumber" name="SMSnumber" value="<!-- TMPL_VAR NAME="SMSnumber"  -->" /></li></ol><!-- /TMPL_IF -->
-
-</fieldset>
-
-
-<fieldset class="action">
-  <input type="submit" value="Submit Changes" /> <a class="cancel" href="/cgi-bin/koha/opac-user.pl">Cancel</a>
-</fieldset>
-
-</form>
 </div>
 </div>
 <div class="yui-b">
