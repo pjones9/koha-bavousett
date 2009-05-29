@@ -361,16 +361,19 @@ if ($borrowernumber) {
         $getreserv{waitingat}      = GetBranchName( $num_res->{'branchcode'} );
         #         check if we have a waiting status for reservations
         if ( $num_res->{'found'} eq 'W' ) {
-            $getreserv{color}   = 'reserved';
-            $getreserv{waiting} = 1;
-#     genarate information displaying only waiting reserves
-        $getWaitingReserveInfo{title}        = $getiteminfo->{'title'};
-        $getWaitingReserveInfo{biblionumber} = $getiteminfo->{'biblionumber'};
-        $getWaitingReserveInfo{itemtype}     = $itemtypeinfo->{'description'};
-        $getWaitingReserveInfo{author}       = $getiteminfo->{'author'};
-        $getWaitingReserveInfo{reservedate}  = format_date( $num_res->{'reservedate'} );
-        $getWaitingReserveInfo{waitingat}    = GetBranchName( $num_res->{'branchcode'} );
-        $getWaitingReserveInfo{waitinghere}  = 1 if $num_res->{'branchcode'} eq $branch;
+          $getreserv{color}   = 'reserved';
+          $getreserv{waiting} = 1;
+          my ($waitingyear,$waitingmonth,$waitingday) = split(/-/,$num_res->{'waitingdate'});
+          my ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($waitingyear,$waitingmonth,$waitingday,C4::Context->preference('ReservesMaxPickUpDelay'));
+          $getreserv{holdexpdate} = sprintf "%02d/%02d/%04d",$holdexpmonth,$holdexpday,$holdexpyear;
+# generate information displaying only waiting reserves
+          $getWaitingReserveInfo{title}        = $getiteminfo->{'title'};
+          $getWaitingReserveInfo{biblionumber} = $getiteminfo->{'biblionumber'};
+          $getWaitingReserveInfo{itemtype}     = $itemtypeinfo->{'description'};
+          $getWaitingReserveInfo{author}       = $getiteminfo->{'author'};
+          $getWaitingReserveInfo{reservedate}  = format_date( $num_res->{'reservedate'} );
+          $getWaitingReserveInfo{waitingat}    = GetBranchName( $num_res->{'branchcode'} );
+          $getWaitingReserveInfo{waitinghere}  = 1 if $num_res->{'branchcode'} eq $branch;
         }
         #         check transfers with the itemnumber foud in th reservation loop
         if ($transfertwhen) {
