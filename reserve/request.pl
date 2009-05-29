@@ -290,8 +290,9 @@ foreach my $biblionumber (@biblionumbers) {
     
     foreach my $biblioitemnumber (@biblioitemnumbers) {
         my $biblioitem = $biblioiteminfos_of->{$biblioitemnumber};
-        my $num_available;
-        my $num_override;
+        my $num_available = 0;
+        my $num_override = 0;
+        my $num_policy_blocked = 0;
         
         $biblioitem->{description} =
           $itemtypes->{ $biblioitem->{itemtype} }{description};
@@ -399,9 +400,13 @@ foreach my $biblionumber (@biblionumbers) {
             }
             
             if (IsAvailableForItemLevelRequest($itemnumber) and not $item->{cantreserve}) {
-                if ( not $policy_holdallowed and C4::Context->preference( 'AllowHoldPolicyOverride' ) ) {
-                    $item->{override} = 1;
-                    $num_override++;
+                if ( not $policy_holdallowed ) {
+					if ( C4::Context->preference( 'AllowHoldPolicyOverride' ) ) {
+						$item->{override} = 1;
+						$num_override++;
+					} else {
+						$num_policy_blocked++;
+					}
                 } elsif ( $policy_holdallowed ) {
                     $item->{available} = 1;
                     $num_available++;
@@ -422,6 +427,7 @@ foreach my $biblionumber (@biblionumbers) {
             $template->param( override_required => 1 );
         } elsif ( $num_available == 0 ) {
             $template->param( none_available => 1 );
+			$template->param( num_policy_blocked => $num_policy_blocked );
             $template->param( warnings => 1 );
             $biblioloopiter{warn} = 1;
             $biblioloopiter{none_avail} = 1;
