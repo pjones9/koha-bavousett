@@ -30,8 +30,6 @@ use C4::Debug;
 use C4::Biblio;
 use Text::CSV_XS;
 use Data::Dumper;
-use Unicode::Normalize;
-use utf8;
 
 BEGIN {
 	$VERSION = 0.03;
@@ -955,7 +953,7 @@ sub split_ddcn {
 
     push @parts, split /\s+/, pop @parts;   # split the last piece into an arbitrary number of pieces at spaces
 
-    if ($parts[-1] =~ /^(.*\d+)(\D.*)$/) {
+    if ($parts[-1] !~ /^.*\d-\d.*$/ && $parts[-1] =~ /^(.*\d+)(\D.*)$/) {
          pop @parts;            # pull off the mathching last element, like example 2
         push @parts, $1, $2;    # replace it with the two pieces
     }
@@ -1043,7 +1041,7 @@ sub DrawSpineText {
         # Or if there is a csv list of fields to display, display them.
         if ( ($$conf_data->{'formatstring'}) || ( $$conf_data->{$field->{code}} && $$item->{$field->{code}} ) ) {
             # get the string
-            my $str = NFC( $field->{data} );
+            my $str = $field->{data} ;
             # strip out naughty existing nl/cr's
             $str =~ s/\n//g;
             $str =~ s/\r//g;
