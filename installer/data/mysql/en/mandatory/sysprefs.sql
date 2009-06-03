@@ -245,3 +245,4 @@ INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('v
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewLabeledMARC','0','Allow display of labeled MARC view of bibiographic records','','YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewMARC','1','Allow display of MARC view of bibiographic records','','YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('FilterBeforeOverdueReport','0','Do not run overdue report until filter selected','','YesNo');
+INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES('EnableOverdueAccruedAmount','0','If ON, splits fines and charges into amount due and overdue accrued amount.  The latter amount can not be paid until the item is checked in.','','YesNo');
