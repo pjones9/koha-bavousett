@@ -153,7 +153,11 @@ foreach my $item (@items) {
     }
 
     # checking for holds
-    my ($reservedate,$reservedfor,$expectedAt) = GetReservesFromItemnumber($item->{itemnumber});
+    my ($reservedate,$reservedfor,$expectedAt);
+    my ($restype,$reserves) = CheckReserves($item->{itemnumber});
+    $reservedate = $reserves->{reservedate};
+    $reservedfor = $reserves->{borrowernumber};
+    $expectedAt  = $reserves->{branchcode};
     my $ItemBorrowerReserveInfo = GetMemberDetails( $reservedfor, 0);
 
     if ( defined $reservedate ) {
