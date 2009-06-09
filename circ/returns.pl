@@ -199,6 +199,12 @@ if ($barcode) {
 	}
     }
 
+    if ( C4::Context->preference("ReturnToShelvingCart") ) {
+       	my $item = GetItem( '', $barcode );
+        $item->{'location'} = 'CART';
+       	ModItem( $item, $item->{'biblionumber'}, $item->{'itemnumber'} );
+    }
+
 #
 # save the return
 #
