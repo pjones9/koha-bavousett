@@ -26,6 +26,7 @@ use C4::Members;
 use C4::Log;
 use C4::SMS;
 use C4::Debug;
+use Date::Calc qw( Add_Delta_Days );
 use Encode;
 use Carp;
 
@@ -509,11 +510,21 @@ sub parseletter {
     }
 
     my $values = $sth->fetchrow_hashref;
+    
+    # TEMPORARY hack until the expirationdate column is added to reserves
+    if ( $table eq 'reserves' && $values->{'waitingdate'} ) {
+        my @waitingdate = split /-/, $values->{'waitingdate'};
 
-    # and get all fields from the table
-    my $columns = C4::Context->dbh->prepare("SHOW COLUMNS FROM $table");
-    $columns->execute;
-    while ( ( my $field ) = $columns->fetchrow_array ) {
+        $values->{'expirationdate'} = C4::Dates->new(
+            sprintf(
+                '%04d-%02d-%02d',
+                Add_Delta_Days( @waitingdate, C4::Context->preference( 'ReservesMaxPickUpDelay' ) )
+            ),
+            'iso'
+        )->output();
+    }
+
+    foreach my $field ( keys %$values ) {
         my $replacefield = "<<$table.$field>>";
         my $replacedby   = $values->{$field} || '';
         ($letter->{title}  ) and $letter->{title}   =~ s/$replacefield/$replacedby/g;
