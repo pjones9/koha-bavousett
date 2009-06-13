@@ -187,7 +187,7 @@ warn "C4::FinesOnReturn::_GetFineData( \$itembarcode = $itembarcode, \$itemnumbe
           AND items.biblionumber = biblioitems.biblionumber
           AND items.biblionumber = biblio.biblionumber
           AND branches.branchcode = items.holdingbranch
-          AND biblioitems.itemtype = itemtypes.itemtype
+          AND items.itype = itemtypes.itemtype
           AND issues.returndate IS NULL
            ";
   if ( $itembarcode ) {
@@ -202,8 +202,10 @@ warn "C4::FinesOnReturn::_GetFineData: SQL: $sql";
 
   if ( $itembarcode ) {
     $sth->execute( $itembarcode );
+    warn "C4::FinesOnReturn: Using barcode: $itembarcode";
   } else {
     $sth->execute( $itemnumber );
+    warn "C4::FinesOnReturn: Using itemnumber: $itemnumber";
   }
 
   my $fineData = $sth->fetchrow_hashref();
