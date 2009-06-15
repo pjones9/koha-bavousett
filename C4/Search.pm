@@ -1439,6 +1439,9 @@ s/\[(.?.?.?.?)$tagsubf(.*?)]/$1$subfieldvalue$2\[$1$tagsubf$2]/g;
                     $itemlost_count++        if $item->{itemlost};
                     $itemdamaged_count++     if $item->{damaged};
                     $item_reserve_count++    if (($restype eq "Waiting") || ($restype eq "Reserved"));
+                    if (($restype eq "Waiting") || ($restype eq "Reserved")) {
+                      $can_place_holds = 1;
+                    }
                     $item_in_transit_count++ if $transfertwhen ne '';
                     $item->{status} = $item->{wthdrawn} . "-" . $item->{itemlost} . "-" . $item->{damaged} . "-" . $item->{notforloan};
                     $other_count++;

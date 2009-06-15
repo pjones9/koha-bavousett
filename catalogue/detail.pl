@@ -154,11 +154,14 @@ foreach my $item (@items) {
 
     # checking for holds
     my ($reservedate,$reservedfor,$expectedAt);
+    my $ItemBorrowerReserveInfo;
     my ($restype,$reserves) = CheckReserves($item->{itemnumber});
-    $reservedate = $reserves->{reservedate};
-    $reservedfor = $reserves->{borrowernumber};
-    $expectedAt  = $reserves->{branchcode};
-    my $ItemBorrowerReserveInfo = GetMemberDetails( $reservedfor, 0);
+    if ($reserves != 0) {
+      $reservedate = $reserves->{reservedate};
+      $reservedfor = $reserves->{borrowernumber};
+      $expectedAt  = $reserves->{branchcode};
+      $ItemBorrowerReserveInfo = GetMemberDetails( $reservedfor, 0);
+    }
 
     if ( defined $reservedate ) {
         $item->{backgroundcolor} = 'reserved';
