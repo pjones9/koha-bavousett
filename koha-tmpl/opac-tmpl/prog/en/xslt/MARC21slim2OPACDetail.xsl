@@ -327,7 +327,7 @@
         </xsl:if>
 
         <xsl:if test="marc:datafield[@tag=880]">
-        <span class="results_summary"><span class="label">Alternate Graphic Representation: </span>
+        <span class="results_summary"><span class="label">Non-Roman Display: </span>
             <xsl:for-each select="marc:datafield[@tag=880]">
                 <xsl:call-template name="chopPunctuation">
                   <xsl:with-param name="chopString">
