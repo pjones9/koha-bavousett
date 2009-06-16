@@ -645,6 +645,7 @@ $template->param(
     issued_itemtypes_count_loop => \@issued_itemtypes_count_loop,
     lib_messages_loop		=> GetMessages( $borrowernumber, 'L', $branch ),
     bor_messages_loop		=> GetMessages( $borrowernumber, 'B', $branch ),
+    all_messages_del		=> C4::Context->preference('AllowAllMessageDeletion'),
     findborrower                => $findborrower,
     borrower                    => $borrower,
     borrowernumber              => $borrowernumber,

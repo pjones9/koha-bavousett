@@ -472,7 +472,20 @@ No patron matched <span class="ex"><!-- TMPL_VAR name="message" --></span>
 		<h4>Messages:</h4>
 		<ul>
 			<!--TMPL_LOOP NAME="lib_messages_loop" -->
-				<li><span class="circ-hlt"><!--TMPL_VAR NAME="message_date_formatted"--> <!--TMPL_VAR NAME="branchcode"--> <i>"<!--TMPL_VAR NAME="message"-->"</i></span> <!-- TMPL_IF NAME="can_delete" --><a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a><!-- /TMPL_IF --></li>
+				<li>
+					<span class="circ-hlt">
+						<!--TMPL_VAR NAME="message_date_formatted"--> 
+						<!--TMPL_VAR NAME="branchcode"--> 
+						<i>"<!--TMPL_VAR NAME="message"-->"</i>
+					</span> 
+					<!-- TMPL_IF NAME="can_delete" -->
+						<a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a>
+					<!-- TMPL_ELSE -->
+						<!-- TMPL_IF NAME="all_messages_del" -->
+							<a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a>
+						<!-- /TMPL_IF -->
+					<!-- /TMPL_IF -->
+				</li>
 			<!-- /TMPL_LOOP -->
 			<!--TMPL_LOOP NAME="bor_messages_loop" -->
 				<li><span class=""><!--TMPL_VAR NAME="message_date_formatted"--> <!--TMPL_VAR NAME="branchcode"--> <i>"<!--TMPL_VAR NAME="message"-->"</i></span> <!-- TMPL_IF NAME="can_delete" --><a href='/cgi-bin/koha/circ/del_message.pl?message_id=<!--TMPL_VAR NAME="message_id" -->&borrowernumber=<!--TMPL_VAR NAME="borrowernumber" -->'>[Delete]</a><!-- /TMPL_IF --></li>
