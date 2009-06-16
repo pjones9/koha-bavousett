@@ -140,19 +140,32 @@ my $i = 0;
 #
 my $sth_items = longoverdue_sth();
 
-my $newstartrange = C4::Context->preference('LongOverduetoLost');
-my $validrange = ($newstartrange =~ /^[1-9][0-9]*$/) ? 1 : 0;
+my $longoverdue_startrange = C4::Context->preference('LongOverdueToLost');
+my $longoverdue_validrange = ($longoverdue_startrange =~ /^[1-9][0-9]*$/) ? 1 : 0;
+my $claimedreturn_startrange = C4::Context->preference('ClaimedReturnToLost');
+my $claimedreturn_validrange = ($claimedreturn_startrange =~ /^[1-9][0-9]*$/) ? 1 : 0;
 foreach my $startrange (sort keys %$lost) {
     if( my $lostvalue = $lost->{$startrange} ) {
-        my ($date1) = ($lostvalue == 2 && $validrange) ? bounds($newstartrange) : bounds($startrange);
         my ($date2) = bounds(  $endrange);
-        # print "\nRange ", ++$i, "\nDue $startrange - $endrange days ago ($date2 to $date1), lost => $lostvalue\n" if($verbose);
-        if ($lostvalue == 2 && $validrange) {
+        my $date1;
+        if ($lostvalue == 2 && $longoverdue_validrange) {
+          $date1 =  bounds($longoverdue_startrange);
+          $lostvalue = 1;
+          $startrange = $$longoverdue_startrange;
           $verbose and
             printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
-            $newstartrange, $endrange, $date2, $date1, $lostvalue;
-          $sth_items->execute($newstartrange, $endrange, $lostvalue);
+            $startrange, $endrange, $date2, $date1, $lostvalue;
+          $sth_items->execute($longoverdue_startrange,$endrange,$lostvalue);
+        } elsif ($lostvalue == 5 && $claimedreturn_validrange) {
+          $date1 =  bounds($claimedreturn_startrange);
+          $lostvalue = 1;
+          $startrange = $claimedreturn_startrange;
+          $verbose and
+            printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
+            $startrange, $endrange, $date2, $date1, $lostvalue;
+          $sth_items->execute($claimedreturn_startrange,$endrange,$lostvalue);
         } else {
+          $date1 = bounds($startrange);
           $verbose and
             printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
             $startrange, $endrange, $date2, $date1, $lostvalue;
