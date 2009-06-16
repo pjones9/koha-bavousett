@@ -657,6 +657,7 @@ $amountold = $temp[1];
 $template->param(
     lib_messages_loop		=> GetMessages( $borrowernumber, 'L', $branch ),
     bor_messages_loop		=> GetMessages( $borrowernumber, 'B', $branch ),
+    all_messages_del		=> C4::Context->preference('AllowAllMessageDeletion'),
     issued_itemtypes_count_loop => $issued_itemtypes_loop,
     findborrower                => $findborrower,
     borrower                    => $borrower,
