@@ -203,7 +203,7 @@ function checkMultiHold() {
           <li><strong>Too Many Holds: </strong> <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=<!-- TMPL_VAR NAME="borrowernumber" -->"><!-- TMPL_VAR NAME="borrowerfirstname" --> <!-- TMPL_VAR NAME="borrowersurname" --> </a> has too many holds.</li>
         <!-- /TMPL_IF -->
         <!-- TMPL_IF NAME="max_shelf_holds_per_day" -->
-          <li><strong>Too Many Shelf Holds Today: </strong> <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=<!-- TMPL_VAR NAME="borrowernumber" -->"><!-- TMPL_VAR NAME="borrowerfirstname" --> <!-- TMPL_VAR NAME="borrowersurname" --> </a> has placed too many holds in one day for bibs with at least on available item.</li>
+          <li><strong>Too Many Shelf Holds Today: </strong> <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=<!-- TMPL_VAR NAME="borrowernumber" -->"><!-- TMPL_VAR NAME="borrowerfirstname" --> <!-- TMPL_VAR NAME="borrowersurname" --> </a> has placed too many holds in one day for bibs with at least one available item.</li>
         <!-- /TMPL_IF -->
         <!-- TMPL_IF NAME="alreadyreserved" -->
           <li><a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=<!-- TMPL_VAR NAME="borrowernumber" -->"><!-- TMPL_VAR NAME="borrowerfirstname" --> <!-- TMPL_VAR NAME="borrowersurname" --></a> <strong>already has a hold</strong> on this item </li>
