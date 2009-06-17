@@ -45,7 +45,7 @@ BEGIN {
 		&DelBranch
 		&DelBranchCategory
 	);
-	@EXPORT_OK = qw( &onlymine );
+	@EXPORT_OK = qw( &onlymine &mybranch );
 }
 
 =head1 NAME
@@ -145,8 +145,14 @@ sub onlymine {
     C4::Context->userenv->{branch}                 ;
 }
 
+# always returns a string for OK comparison via "eq" or "ne"
+sub mybranch {
+    C4::Context->userenv           or return '';
+    return C4::Context->userenv->{branch} || '';
+}
+
 sub GetBranchesLoop (;$$) {  # since this is what most pages want anyway
-    my $branch   = @_ ? shift : '';     # optional first argument is branchcode of "my branch", if preselection is wanted.
+    my $branch   = @_ ? shift : mybranch();     # optional first argument is branchcode of "my branch", if preselection is wanted.
     my $onlymine = @_ ? shift : onlymine();
     my $branches = GetBranches($onlymine);
     my @loop;
@@ -177,9 +183,9 @@ sub GetBranchName {
 
 =head2 ModBranch
 
-&ModBranch($newvalue);
+$error = &ModBranch($newvalue);
 
-This function modify an existing branches.
+This function modify an existing branch
 
 C<$newvalue> is a ref to an array wich is containt all the column from branches table.
 
@@ -205,6 +211,7 @@ sub ModBranch {
             $data->{'branchfax'},        $data->{'branchemail'},
             $data->{'branchip'},         $data->{'branchprinter'},
         );
+        return 1 if $dbh->err;
     } else {
         my $query  = "
             UPDATE branches
