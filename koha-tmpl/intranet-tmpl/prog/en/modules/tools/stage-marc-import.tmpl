@@ -34,6 +34,8 @@ var available_profiles = {
     nomatch_action: "<!-- TMPL_VAR NAME="nomatch_action" -->", 
     parse_items: "<!-- TMPL_VAR NAME="parse_items" -->",
     item_action: "<!-- TMPL_VAR NAME="item_action" -->"
+    created_items: <!-- TMPL_VAR NAME="created_items" -->,
+    modified_subfields: [ <!-- TMPL_LOOP NAME="modified_subfields" -->[ <!-- TMPL_VAR NAME="tag" -->, <!-- TMPL_VAR NAME="subfield" --> ]<!-- TMPL_UNLESS NAME="__last__" -->, <!-- /TMPL_UNLESS--><!-- /TMPL_LOOP --> ]
   }<!-- TMPL_UNLESS NAME="__last__" -->,<!-- /TMPL_UNLESS -->
   <!-- /TMPL_LOOP -->
 };
@@ -194,6 +196,15 @@ $(document).ready(function(){
       <li><label for="item_action">How to process items: </label>
            <!-- TMPL_INCLUDE NAME="tools-item-action.inc" -->
       </li>
+    </ol>
+  </fieldset>
+  <fieldset class="rows" id="add_items">
+    <legend>Add more items?</legend>
+    <ol style="display: none" id="item0">
+      <!-- TMPL_INCLUDE NAME="item-fields.inc" -->
+    </ol>
+    <ol>
+      <li><input type="button" id="newitem" value="New item" /></li>
     </ol>
   </fieldset>
   <fieldset class="action"><input type="button" id="mainformsubmit" onclick="return CheckForm(this.form);" value="Stage for import" /></fieldset>
