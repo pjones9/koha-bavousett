@@ -4,7 +4,12 @@
 <link rel="shortcut icon" href="<!-- TMPL_VAR NAME="themelang" -->/includes/favicon.ico" type="image/x-icon" />
 <!-- TMPL_IF name="opacstylesheet" --><link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="opacstylesheet" -->" /><!-- TMPL_ELSE -->
 <!-- TMPL_IF name="opaclayoutstylesheet" --><link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/<!-- TMPL_VAR NAME="opaclayoutstylesheet" -->" /><!-- TMPL_ELSE --><link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/opac.css" /><!-- /TMPL_IF --><!-- /TMPL_IF -->
-<!-- TMPL_IF name="opaccolorstylesheet" --><link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/<!-- TMPL_VAR NAME="opaccolorstylesheet" -->" /><!-- /TMPL_IF -->
+<!-- TMPL_IF name="opaccolorstylesheet" -->
+    <link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/<!-- TMPL_VAR NAME="opaccolorstylesheet" -->" />
+<!-- /TMPL_IF -->
+<!-- TMPL_IF name="opac_css_override" -->
+    <link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/<!-- TMPL_VAR NAME="opac_css_override" -->" />
+<!-- /TMPL_IF -->
 <link rel="stylesheet" type="text/css" media="print" href="<!-- TMPL_VAR NAME="themelang" -->/css/print.css" />
 <link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/lib/jquery/plugins/ui.tabs.css" />
 <!-- TMPL_IF NAME="OPACUserCSS" --><style type="text/css"><!-- TMPL_VAR NAME="OPACUserCSS" --></style><!-- /TMPL_IF -->
@@ -75,3 +80,8 @@
 	//]]>
 </script><!-- /TMPL_IF -->
 <link rel="unapi-server" type="application/xml" title="unAPI" href="<!-- TMPL_VAR NAME="OPACBaseURL" -->/cgi-bin/koha/unapi" />
+<!-- TMPL_IF NAME="GoogleIndicTransliteration" -->
+        <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+        <script type="text/javascript" language="javascript" src="<!-- TMPL_VAR NAME="themelang" -->/js/googleindictransliteration.js"></script>
+<!-- /TMPL_IF -->
+

@@ -236,10 +236,9 @@ sub AddBiblio {
     _koha_marc_update_biblioitem_cn_sort($record, $olddata, $frameworkcode);
     
     # now add the record
-    $biblionumber = ModBiblioMarc( $record, $biblionumber, $frameworkcode ) unless $defer_marc_save;
+    ModBiblioMarc( $record, $biblionumber, $frameworkcode ) unless $defer_marc_save;
       
     logaction("CATALOGUING", "ADD", $biblionumber, "biblio") if C4::Context->preference("CataloguingLog");
-
     return ( $biblionumber, $biblioitemnumber );
 }
 
@@ -2233,7 +2232,7 @@ sub PrepareItemrecordDisplay {
                         "branches" )
                     {
                         if ( ( C4::Context->preference("IndependantBranches") )
-                            && ( C4::Context->userenv->{flags} != 1 ) )
+                            && ( C4::Context->userenv->{flags} % 2 != 1 ) )
                         {
                             my $sth =
                               $dbh->prepare(

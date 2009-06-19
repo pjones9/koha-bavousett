@@ -107,6 +107,7 @@ foreach my $subscription (@subscriptions) {
     $cell{subscriptionid}    = $subscription->{subscriptionid};
     $cell{subscriptionnotes} = $subscription->{notes};
     $cell{branchcode}        = $subscription->{branchcode};
+    $cell{branchname}        = GetBranchName($subscription->{branchcode});
     $cell{hasalert}          = $subscription->{hasalert};
     #get the three latest serials.
     $serials_to_display = $subscription->{opacdisplaycount};
@@ -237,6 +238,7 @@ foreach ( @$reviews ) {
     $_->{surname}   = $borrowerData->{'surname'};
     $_->{firstname} = $borrowerData->{'firstname'};
     $_->{userid}    = $borrowerData->{'userid'};
+    $_->{cardnumber}    = $borrowerData->{'cardnumber'};
     $_->{datereviewed} = format_date($_->{datereviewed});
     if ($borrowerData->{'borrowernumber'} eq $borrowernumber) {
 		$_->{your_comment} = 1;

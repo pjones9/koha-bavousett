@@ -187,7 +187,7 @@ sub SearchMember {
         $query .= ($category_type ? " AND category_type = ".$dbh->quote($category_type) : ""); 
         $query .= " WHERE (surname LIKE ? OR cardnumber like ?) ";
         if (C4::Context->preference("IndependantBranches") && !$showallbranches){
-          if (C4::Context->userenv && C4::Context->userenv->{flags}!=1 && C4::Context->userenv->{'branch'}){
+          if (C4::Context->userenv && C4::Context->userenv->{flags} % 2 !=1 && C4::Context->userenv->{'branch'}){
             $query.=" AND borrowers.branchcode =".$dbh->quote(C4::Context->userenv->{'branch'}) unless (C4::Context->userenv->{'branch'} eq "insecure");
           }
         }
@@ -200,7 +200,7 @@ sub SearchMember {
         $count = @data;
         $query .= " WHERE ";
         if (C4::Context->preference("IndependantBranches") && !$showallbranches){
-          if (C4::Context->userenv && C4::Context->userenv->{flags}!=1 && C4::Context->userenv->{'branch'}){
+          if (C4::Context->userenv && C4::Context->userenv->{flags} % 2 !=1 && C4::Context->userenv->{'branch'}){
             $query.=" borrowers.branchcode =".$dbh->quote(C4::Context->userenv->{'branch'})." AND " unless (C4::Context->userenv->{'branch'} eq "insecure");
           }      
         }     
@@ -1972,7 +1972,7 @@ sub GetBorrowersWhoHaveNotBorrowedSince {
     my $filterbranch = shift || 
                         ((C4::Context->preference('IndependantBranches') 
                              && C4::Context->userenv 
-                             && C4::Context->userenv->{flags}!=1 
+                             && C4::Context->userenv->{flags} % 2 !=1 
                              && C4::Context->userenv->{branch})
                          ? C4::Context->userenv->{branch}
                          : "");  
@@ -2024,7 +2024,7 @@ sub GetBorrowersWhoHaveNeverBorrowed {
     my $filterbranch = shift || 
                         ((C4::Context->preference('IndependantBranches') 
                              && C4::Context->userenv 
-                             && C4::Context->userenv->{flags}!=1 
+                             && C4::Context->userenv->{flags} % 2 !=1 
                              && C4::Context->userenv->{branch})
                          ? C4::Context->userenv->{branch}
                          : "");  
@@ -2074,7 +2074,7 @@ sub GetBorrowersWithIssuesHistoryOlderThan {
     my $filterbranch = shift || 
                         ((C4::Context->preference('IndependantBranches') 
                              && C4::Context->userenv 
-                             && C4::Context->userenv->{flags}!=1 
+                             && C4::Context->userenv->{flags} % 2 !=1 
                              && C4::Context->userenv->{branch})
                          ? C4::Context->userenv->{branch}
                          : "");  
