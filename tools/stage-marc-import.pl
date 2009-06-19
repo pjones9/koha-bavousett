@@ -40,6 +40,7 @@ use C4::ImportBatch;
 use C4::Matcher;
 use C4::UploadedFile;
 use C4::BackgroundJob;
+use C4::Form::AddItem;
 
 my $input = new CGI;
 my $dbh = C4::Context->dbh;
@@ -55,6 +56,7 @@ my $parse_items = $input->param('parse_items');
 my $item_action = $input->param('item_action');
 my $comments = $input->param('comments');
 my $syntax = $input->param('syntax');
+my $profile = $input->param('profile');
 my $new_profile_name = $input->param('new_profile_name');
 my ($template, $loggedinuser, $cookie)
 	= get_template_and_user({template_name => "tools/stage-marc-import.tmpl",
@@ -68,6 +70,7 @@ my ($template, $loggedinuser, $cookie)
 $template->param(SCRIPT_NAME => $ENV{'SCRIPT_NAME'},
 						uploadmarc => $fileID);
 
+my $tagslib = &GetMarcStructure(1, ''); # Assuming default framework
 my %cookies = parse CGI::Cookie($cookie);
 my $sessionID = $cookies{'CGISESSID'}->value;
 if ($completedJobID) {
@@ -90,7 +93,22 @@ if ($completedJobID) {
     my $staging_callback = sub { };
     my $matching_callback = sub { };
 
-	if ($new_profile_name) {
+    my @additional_items;
+    my @subfield_actions;
+
+    if ( $profile ) {
+        if ( $input->param( 'include_items_from_profile' ) ) {
+            push @additional_items, GetImportProfileItems( $profile );
+        }
+        if ( $input->param( 'include_actions_from_profile' ) ) {
+            push @subfield_actions, GetImportProfileSubfieldActions( $profile );
+        }
+    }
+
+    push @additional_items, C4::Form::AddItem::get_all_items( $input, '' );
+    push @subfield_actions, get_subfield_actions( $input );
+
+	if ( $new_profile_name ) {
 		$new_profile_name =~ s/^\s+|\s+$//g;
 		AddImportProfile( $new_profile_name, $matcher_id, undef, $overlay_action, $nomatch_action, $parse_items, $item_action );
 	}
@@ -190,6 +208,7 @@ if ($completedJobID) {
     $template->param(
 		available_matchers => \@matchers,
 		available_profiles => GetImportProfileLoop(),
+        item => C4::Form::AddItem::get_form_values( $tagslib, 0, { omit => [ 'items.barcode' ], allow_repeatable => 0 } ),
 	);
 }
 

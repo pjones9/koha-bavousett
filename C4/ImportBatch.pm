@@ -1258,7 +1258,7 @@ sub GetImportProfile {
 
     my $dbh = C4::Context->dbh;
 
-    return $dbh->selectrow_hashref( "
+    my $profile = $dbh->selectrow_hashref( "
         SELECT
           description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action
           FROM import_profiles
@@ -1269,11 +1269,32 @@ sub GetImportProfile {
 sub GetImportProfileLoop {
     my $dbh = C4::Context->dbh;
 
-    return $dbh->selectall_arrayref( "
+    my $results = $dbh->selectall_arrayref( "
         SELECT
-          profile_id, description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action
+          import_profiles.profile_id, description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action, COUNT( marcxml ) AS added_items, ip_actions.tag, ip_actions.subfield
           FROM import_profiles
+            LEFT JOIN import_profile_added_items AS ip_items ON ( import_profiles.profile_id = ip_items.profile_id )
+            LEFT JOIN import_profile_subfield_actions AS ip_actions ON ( import_profiles.profile_id = ip_actions.profile_id )
+          GROUP BY import_profiles.profile_id, ip_actions.tag, ip_actions.subfield
     ", { Slice => {} } );
+    return unless ( @$results );
+
+    my @profiles;
+    my $current_profile;
+
+    foreach my $result ( @$results ) {
+        if ( $current_profile && $current_profile->{'profile_id'} == $result->{'profile_id'} ) {
+            push @{ $current_profile->{'modified_subfields'} }, { tag => $result->{'tag'}, subfield => $result->{'subfield'} } 
+        } else {
+            push @profiles, $result;
+            $current_profile = $result;
+            $current_profile->{'modified_subfields'} = $result->{'tag'} ? [ { tag => $result->{'tag'}, subfield => $result->{'subfield'} } ] : [];
+        }
+        delete $result->{'tag'};
+        delete $result->{'subfield'};
+    }
+
+    return \@profiles;
 }
 
 # internal functions

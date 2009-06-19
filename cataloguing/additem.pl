@@ -20,25 +20,21 @@
 
 use CGI;
 use strict;
+use warnings;
 use C4::Auth;
 use C4::Output;
 use C4::Biblio;
 use C4::Items;
 use C4::Context;
-use C4::Koha; # XXX subfield_is_koha_internal_p
-use C4::Branch; # XXX subfield_is_koha_internal_p
-use C4::ClassSource;
 use C4::Dates;
 use C4::Form::AddItem;
-
-use MARC::File::XML;
 
 my $input = new CGI;
 my $dbh = C4::Context->dbh;
 my $error        = $input->param('error');
 my $biblionumber = $input->param('biblionumber');
-my $itemnumber   = $input->param('itemnumber');
-my $op           = $input->param('op');
+my $itemnumber   = $input->param('itemnumber') || '';
+my $op           = $input->param('op') || '';
 
 my ($template, $loggedinuser, $cookie)
     = get_template_and_user({template_name => "cataloguing/additem.tmpl",
@@ -63,40 +59,12 @@ my @errors; # store errors found while checking data BEFORE saving item.
 #-------------------------------------------------------------------------------
 if ($op eq "additem") {
 #-------------------------------------------------------------------------------
-    # rebuild
-    my @tags      = $input->param('tag');
-    my @subfields = $input->param('subfield');
-    my @values    = $input->param('field_value');
-    # build indicator hash.
-    my @ind_tag   = $input->param('ind_tag');
-    my @indicator = $input->param('indicator');
-    my $xml = TransformHtmlToXml(\@tags,\@subfields,\@values,\@indicator,\@ind_tag, 'ITEM');
-    my $record = MARC::Record::new_from_xml($xml, 'UTF-8');
-    # if autoBarcode is set to 'incremental', calculate barcode...
-	# NOTE: This code is subject to change in 3.2 with the implemenation of ajax based autobarcode code
-	# NOTE: 'incremental' is the ONLY autoBarcode option available to those not using javascript
-    if (C4::Context->preference('autoBarcode') eq 'incremental') {
-        my ($tagfield,$tagsubfield) = &GetMarcFromKohaField("items.barcode",$frameworkcode);
-        unless ($record->field($tagfield)->subfield($tagsubfield)) {
-            my $sth_barcode = $dbh->prepare("select max(abs(barcode)) from items");
-            $sth_barcode->execute;
-            my ($newbarcode) = $sth_barcode->fetchrow;
-            $newbarcode++;
-            # OK, we have the new barcode, now create the entry in MARC record
-            my $fieldItem = $record->field($tagfield);
-            $record->delete_field($fieldItem);
-            $fieldItem->add_subfields($tagsubfield => $newbarcode);
-            $record->insert_fields_ordered($fieldItem);
-        }
-    }
-# check for item barcode # being unique
-    my $addedolditem = TransformMarcToKoha($dbh,$record);
-    my $exist_itemnumber = get_item_from_barcode($addedolditem->{'barcode'});
+    my ( $record, $barcode_not_unique ) = C4::Form::AddItem::get_item_record( $input, $frameworkcode, 0 );
     push @errors,"barcode_not_unique" if($barcode_not_unique);
     # if barcode exists, don't create, but report The problem.
-    my ($oldbiblionumber,$oldbibnum,$oldbibitemnum) = AddItemFromMarc($record,$biblionumber) unless ($exist_itemnumber);
+    my ($oldbiblionumber,$oldbibnum,$oldbibitemnum) = AddItemFromMarc($record,$biblionumber) unless ($barcode_not_unique);
     $nextop = "additem";
-    if ($exist_itemnumber) {
+    if ($barcode_not_unique) {
         $itemrecord = $record;
     }
 #-------------------------------------------------------------------------------
@@ -132,11 +100,9 @@ if ($op eq "additem") {
 } elsif ($op eq "saveitem") {
 #-------------------------------------------------------------------------------
     # rebuild
-    eval { $itemtosave = C4::Form::AddItem::get_item_record($input, 0, $itemnumber); };
-    if ($@) {
-        chomp $@;
-        die $@ if ( $@ !~ /^[a-z0-9_]+$/ );
-        push @errors, $@;
+    my ( $itemtosave, $barcode_not_unique ) = C4::Form::AddItem::get_item_record( $input, $frameworkcode, 0, $itemnumber );
+    if ( $barcode_not_unique ) {
+        push @errors, 'barcode_not_unique';
     } else {
         my ($oldbiblionumber,$oldbibnum,$oldbibitemnum) = ModItemFromMarc($itemtosave,$biblionumber,$itemnumber);
         $itemnumber="";
@@ -162,7 +128,7 @@ my ($branchtagfield, $branchtagsubfield) = &GetMarcFromKohaField("items.homebran
 foreach my $field (@fields) {
     next if ($field->tag()<10);
     my @subf = $field->subfields;
-    (defined @subf) or @subf = ();
+    (@subf) or @subf = ();
     my %this_row;
 # loop through each subfield
     for my $i (0..$#subf) {
@@ -177,7 +143,7 @@ foreach my $field (@fields) {
 						|| $subf[$i][1];
 		}
 
-        if (($field->tag eq $branchtagfield) && ($subf[$i][$0] eq $branchtagsubfield) && C4::Context->preference("IndependantBranches")) {
+        if (($field->tag eq $branchtagfield) && ($subf[$i][0] eq $branchtagsubfield) && C4::Context->preference("IndependantBranches")) {
             #verifying rights
             my $userenv = C4::Context->userenv();
             unless (($userenv->{'flags'} == 1) or (($userenv->{'branch'} eq $subf[$i][1]))){
@@ -223,7 +189,11 @@ $template->param(
     author       => $oldrecord->{author},
     item_loop        => \@item_value_loop,
     item_header_loop => \@header_value_loop,
-    item             => C4::Form::AddItem::get_form_values( $itemrecord, 0 ),
+    item             => C4::Form::AddItem::get_form_values( $tagslib, 0, {
+        item => $itemrecord,
+        biblio => $temp,
+        frameworkcode => $frameworkcode,
+    }),
     itemnumber       => $itemnumber,
     itemtagfield     => $itemtagfield,
     itemtagsubfield  => $itemtagsubfield,
