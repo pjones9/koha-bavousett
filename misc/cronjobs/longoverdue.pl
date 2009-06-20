@@ -140,15 +140,37 @@ my $i = 0;
 #
 my $sth_items = longoverdue_sth();
 
+my $longoverdue_startrange = C4::Context->preference('LongOverdueToLost');
+my $longoverdue_validrange = ($longoverdue_startrange =~ /^[1-9][0-9]*$/) ? 1 : 0;
+my $claimedreturn_startrange = C4::Context->preference('ClaimedReturnToLost');
+my $claimedreturn_validrange = ($claimedreturn_startrange =~ /^[1-9][0-9]*$/) ? 1 : 0;
 foreach my $startrange (sort keys %$lost) {
     if( my $lostvalue = $lost->{$startrange} ) {
-        my ($date1) = bounds($startrange);
         my ($date2) = bounds(  $endrange);
-        # print "\nRange ", ++$i, "\nDue $startrange - $endrange days ago ($date2 to $date1), lost => $lostvalue\n" if($verbose);
-        $verbose and 
+        my $date1;
+        if ($lostvalue == 2 && $longoverdue_validrange) {
+          $date1 =  bounds($longoverdue_startrange);
+          $lostvalue = 1;
+          $startrange = $$longoverdue_startrange;
+          $verbose and
             printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
             $startrange, $endrange, $date2, $date1, $lostvalue;
-        $sth_items->execute($startrange, $endrange, $lostvalue);
+          $sth_items->execute($longoverdue_startrange,$endrange,$lostvalue);
+        } elsif ($lostvalue == 5 && $claimedreturn_validrange) {
+          $date1 =  bounds($claimedreturn_startrange);
+          $lostvalue = 1;
+          $startrange = $claimedreturn_startrange;
+          $verbose and
+            printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
+            $startrange, $endrange, $date2, $date1, $lostvalue;
+          $sth_items->execute($claimedreturn_startrange,$endrange,$lostvalue);
+        } else {
+          $date1 = bounds($startrange);
+          $verbose and
+            printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
+            $startrange, $endrange, $date2, $date1, $lostvalue;
+          $sth_items->execute($startrange, $endrange, $lostvalue);
+        }
         $count=0;
         while (my $row=$sth_items->fetchrow_hashref) {
             printf ("Due %s: item %5s from borrower %5s to lost: %s\n", $row->{date_due}, $row->{itemnumber}, $row->{borrowernumber}, $lostvalue) if($verbose);
