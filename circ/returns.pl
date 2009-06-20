@@ -176,6 +176,22 @@ if ($dotransfer){
 # actually return book and prepare item table.....
 if ($barcode) {
     $barcode = barcodedecode($barcode) if C4::Context->preference('itemBarcodeInputFilter');
+
+    if ( C4::Context->preference("InProcessingToShelvingCart") ) {
+       	my $item = GetItem( '', $barcode );
+        if ( $item->{'location'} eq 'PROC' ) {
+	        $item->{'location'} = 'CART';
+        	ModItem( $item, $item->{'biblionumber'}, $item->{'itemnumber'} );
+	}
+    }
+
+    if ( C4::Context->preference("ReturnToShelvingCart") ) {
+       	my $item = GetItem( '', $barcode );
+        $item->{'location'} = 'CART';
+       	ModItem( $item, $item->{'biblionumber'}, $item->{'itemnumber'} );
+    }
+
+>>>>>>> k_updloc:circ/returns.pl
 #
 # save the return
 #
@@ -216,6 +232,8 @@ if ($barcode) {
         if ( $biblio->{'homebranch'} ne $userenv_branch ) {
             $template->param( homebranch => $biblio->{'homebranch'} );
         }
+        
+                                        
     }
     elsif ( !$messages->{'BadBarcode'} ) {
         $input{duedate}   = 0;
