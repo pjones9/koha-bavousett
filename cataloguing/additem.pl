@@ -131,6 +131,12 @@ if ($op eq "additem") {
     $itemrecord = C4::Items::GetMarcItem($biblionumber,$itemnumber);
     $nextop = "saveitem";
 #-------------------------------------------------------------------------------
+} elsif ($op eq "addadditionalitem") {
+#-------------------------------------------------------------------------------
+# retrieve marc_value field of an existing record
+    $itemrecord = C4::Items::GetMarcItem($biblionumber,$itemnumber);
+    $nextop="additem";
+#-------------------------------------------------------------------------------
 } elsif ($op eq "delitem") {
 #-------------------------------------------------------------------------------
     # check that there is no issue on this item before deletion.
@@ -306,6 +312,7 @@ foreach my $tag (sort keys %{$tagslib}) {
         }
     }
 
+    $value = '' if (($op eq "addadditionalitem") && ($tagslib->{$tag}->{$subfield}->{lib} eq "Barcode"));
     my $attributes_no_value = qq(tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255" );
     my $attributes          = qq($attributes_no_value value="$value" );
     if ( $tagslib->{$tag}->{$subfield}->{authorised_value} ) {
@@ -385,7 +392,7 @@ foreach my $tag (sort keys %{$tagslib}) {
     ";
     # it's a plugin field
     }
-    elsif ( $tagslib->{$tag}->{$subfield}->{value_builder} ) {
+    elsif ( $tagslib->{$tag}->{$subfield}->{'value_builder'} ) {
         # opening plugin
         my $plugin = C4::Context->intranetdir . "/cataloguing/value_builder/" . $tagslib->{$tag}->{$subfield}->{'value_builder'};
         if (do $plugin) {
