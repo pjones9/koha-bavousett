@@ -53,6 +53,7 @@ overdue_notices.pl [ -n ] [ -library <branchcode> ] [ -max <number of days> ] [ 
    -max          <days>           maximum days overdue to deal with
    -library      <branchname>     only deal with overdues from this library
    -csv          <filename>       populate CSV file
+   -html         <filename>       Output html to file
    -itemscontent <list of fields> item information in templates
 
 =head1 OPTIONS
@@ -231,6 +232,7 @@ my $nomail  = 0;
 my $MAX     = 90;
 my $mybranch;
 my $csvfilename;
+my $htmlfilename;
 my $triggered = 0;
 my $listall = 0;
 my $itemscontent = join( ',', qw( issuedate title barcode author ) );
@@ -243,6 +245,7 @@ GetOptions(
     'max=s'          => \$MAX,
     'library=s'      => \$mybranch,
     'csv:s'          => \$csvfilename,    # this optional argument gets '' if not supplied.
+    'html:s'          => \$htmlfilename,    # this optional argument gets '' if not supplied.
     'itemscontent=s' => \$itemscontent,
     'list-all'      => \$listall,
     't|triggered'             => \$triggered,
@@ -282,6 +285,7 @@ my @item_content_fields = split( /,/, $itemscontent );
 my $dbh = C4::Context->dbh();
 binmode( STDOUT, ":utf8" );
 
+
 our $csv;       # the Text::CSV_XS object
 our $csv_fh;    # the filehandle to the CSV file.
 if ( defined $csvfilename ) {
@@ -296,6 +300,23 @@ if ( defined $csvfilename ) {
     } else {
         $verbose and warn 'combine failed on argument: ' . $csv->error_input;
     }
+}
+
+our $html_fh;
+if ( defined $htmlfilename ) {
+  if ( $htmlfilename eq '' ) {
+    $html_fh = *STDOUT;
+  } else {
+    open $html_fh, ">", $htmlfilename or die "unable to open $htmlfilename: $!";
+  }
+  
+  print $html_fh "<html>\n";
+  print $html_fh "<head>\n";
+  print $html_fh "<style type='text/css'>\n";
+  print $html_fh "pre {page-break-after: always}\n";
+  print $html_fh "</style>\n";
+  print $html_fh "</head>\n";
+  print $html_fh "<body>\n";
 }
 
 foreach my $branchcode (@branches) {
@@ -443,7 +464,7 @@ END_SQL
                             email          => $email,
                             itemcount      => $itemcount,
                             titles         => $titles,
-                            outputformat   => defined $csvfilename ? 'csv' : '',
+                            outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                         }
                       );
                 } else {
@@ -471,7 +492,7 @@ END_SQL
                                 email          => $email,
                                 itemcount      => $itemcount,
                                 titles         => $titles,
-                                outputformat   => defined $csvfilename ? 'csv' : '',
+                                outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                             }
                           );
                     }
@@ -485,11 +506,17 @@ END_SQL
         if ($nomail) {
             if ( defined $csvfilename ) {
                 print $csv_fh @output_chunks;
+            } elsif ( defined $htmlfilename ) {
+                print $html_fh @output_chunks;
             } else {
                 local $, = "\f";    # pagebreak
                 print @output_chunks;
             }
-        } else {
+        } 
+        elsif ( defined $htmlfilename ) {
+            print $html_fh @output_chunks;        
+        }
+        else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
                 type => 'text/plain',
@@ -513,10 +540,15 @@ END_SQL
 
 }
 if ($csvfilename) {
-
     # note that we're not testing on $csv_fh to prevent closing
     # STDOUT.
     close $csv_fh;
+}
+
+if ( defined $htmlfilename ) {
+  print $html_fh "</body>\n";
+  print $html_fh "</html>\n";
+  close $html_fh;
 }
 
 =head1 INTERNAL METHODS
@@ -605,6 +637,10 @@ sub prepare_letter_for_printing {
         } else {
             $verbose and warn 'combine failed on argument: ' . $csv->error_input;
         }
+    } elsif ( exists $params->{'outputformat'} && $params->{'outputformat'} eq 'html' ) {
+      $return = "<pre>\n";
+      $return .= "$params->{'letter'}->{'content'}\n";
+      $return .= "\n</pre>\n";
     } else {
         $return .= "$params->{'letter'}->{'content'}\n";
 
