@@ -70,6 +70,26 @@ TMPL_ELSE -->Title<!-- /TMPL_UNLESS --></th>
 </table></div></div>
 
 <!-- /TMPL_UNLESS -->
+
+<!-- TMPL_IF NAME="AllowReadingHistoryAnonymizing" -->
+        <p>
+                <form method="post" action="opac-update_reading_history.pl">
+                        <label for="disable_reading_history">Enable Reading History?</label>
+                        <input type="radio" name="disable_reading_history" value="0" <!--TMPL_IF NAME="disable_reading_history"-->checked<!-- /TMPL_IF-->>Yes
+                        <input type="radio" name="disable_reading_history" value="1" <!--TMPL_IF NAME="disable_reading_history"--><!-- TMPL_ELSE -->checked<!-- /TMPL_IF-->> No
+                        <input type="submit" value="Save" />
+                        <p><i>
+				By subscribing to My Reading History, I acknowledge that East Brunswick
+				Public Library's online library catalog will retain for my personal use
+				only a list of all materials that I borrow. I may unsubscribe from this
+				service at any time. Library staff will not access or release my reading
+				history unless required by law to do so. I understand that anyone with
+				access to my library card number and PIN can check my reading history or
+				any other information attached to my account.
+			</i>
+                </form>
+        </p>
+<!-- /TMPL_IF -->
 </div>
 </div>
 </div>

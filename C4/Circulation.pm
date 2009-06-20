@@ -1413,6 +1413,9 @@ sub AddReturn {
     my $iteminformation = GetItemIssue( GetItemnumberFromBarcode($barcode));
     my $biblio = GetBiblioItemData($iteminformation->{'biblioitemnumber'});
 #     use Data::Dumper;warn Data::Dumper::Dumper($iteminformation);  
+
+
+
     unless ($iteminformation->{'itemnumber'} ) {
         $messages->{'BadBarcode'} = $barcode;
         $doreturn = 0;
@@ -1453,6 +1456,9 @@ sub AddReturn {
     
     # update issues, thereby returning book (should push this out into another subroutine
         $borrower = C4::Members::GetMemberDetails( $iteminformation->{borrowernumber}, 0 );
+        if ( C4::Context->preference('AllowReadingHistoryAnonymizing') && $borrower->{'disable_reading_history'} ) {
+          AnonymiseIssueHistory( '', $borrower->{'borrowernumber'} );
+        }
     
     # case of a return of document (deal with issues and holdingbranch)
     
@@ -1583,7 +1589,15 @@ sub AddReturn {
 				$messages->{'NeedsTransfer'} = 1;
 			}
         }
+
+
     }
+
+        if ( $borrower->{'disable_reading_history'} ) {
+          my $rowsaffected = AnonymiseIssueHistory( '', $borrower->{'borrowernumber'} );
+          warn "Rows Affected: $rowsaffected"; 
+        }
+
     return ( $doreturn, $messages, $iteminformation, $borrower );
 }
 
@@ -2429,13 +2443,17 @@ sub AnonymiseIssueHistory {
     my $date           = shift;
     my $borrowernumber = shift;
     my $dbh            = C4::Context->dbh;
-    my $query          = "
+    
+    unless ( $date || $borrowernumber ) { return 0; } ## For safety
+
+    my $query = "
         UPDATE old_issues
         SET    borrowernumber = NULL
-        WHERE  returndate < '".$date."'
-          AND borrowernumber IS NOT NULL
+        WHERE  borrowernumber IS NOT NULL
     ";
-    $query .= " AND borrowernumber = '".$borrowernumber."'" if defined $borrowernumber;
+    $query .= " AND returndate < '$date' " if ( $date );
+    $query .= " AND borrowernumber = '$borrowernumber' " if defined $borrowernumber;
+    warn "AnonymiseIssueHistory: $query";
     my $rows_affected = $dbh->do($query);
     return $rows_affected;
 }
