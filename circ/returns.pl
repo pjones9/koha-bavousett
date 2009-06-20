@@ -191,7 +191,6 @@ if ($barcode) {
        	ModItem( $item, $item->{'biblionumber'}, $item->{'itemnumber'} );
     }
 
->>>>>>> k_updloc:circ/returns.pl
 #
 # save the return
 #

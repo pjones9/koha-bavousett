@@ -432,6 +432,7 @@ if (C4::Context->preference('EnhancedMessagingPreferences')) {
     $template->param(messaging_form_inactive => 1);
     $template->param(SMSSendDriver => C4::Context->preference("SMSSendDriver"));
     $template->param(SMSnumber     => defined $data->{'smsalertnumber'} ? $data->{'smsalertnumber'} : $data->{'mobile'});
+}
 
 my @previousCardnumbers = C4::Stats::GetPreviousCardnumbers( $borrowernumber );
 
