@@ -1,4 +1,4 @@
-<!-- TMPL_INCLUDE NAME="doc-head-open.inc" -->
+<k!-- TMPL_INCLUDE NAME="doc-head-open.inc" -->
 <!-- TMPL_UNLESS NAME="multi_hold" -->
     <title>Koha &rsaquo; Circulation &rsaquo; Holds &rsaquo; Place a hold on <!-- TMPL_VAR NAME="title" escape="html" --></title>
 <!-- TMPL_ELSE -->
@@ -489,8 +489,9 @@ function checkMultiHold() {
     <input type = "hidden" name="biblionumbers" value="<!-- TMPL_VAR NAME="biblionumbers" -->"/>
   <!-- /TMPL_IF -->
 
+
 <fieldset class="rows left">
-<legend>Existing holds</legend>
+<legend>Existing Holds</legend>
 
 <!-- TMPL_LOOP NAME="biblioloop" -->
 
@@ -499,14 +500,15 @@ function checkMultiHold() {
       <!-- TMPL_IF NAME="multi_hold" -->
           <caption><a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->"><!-- TMPL_VAR NAME="title" --></a></caption>
       <!-- /TMPL_IF -->
-      <tr>
-        <th>Priority</th>
-        <th>Patron</th>
-        <th>Notes</th>
-        <th>Date</th>
-        <th>Pick up Library</th>
-        <th>Details</th>
-      </tr>
+                <tr>
+                        <th>Priority</th>
+                        <th>Patron</th>
+                        <th>Notes</th>
+                        <th>Date</th>
+                        <th>Pick up Library</th>
+                        <th>Details</th>
+                        <th>Suspend Hold</th>  
+                </tr>
   <!-- TMPL_LOOP Name="reserveloop" -->
       <tr>
         <td>
@@ -586,6 +588,12 @@ function checkMultiHold() {
       <!-- /TMPL_IF -->
     <!-- /TMPL_IF -->
         </td>
+	<td>
+		<input type="checkbox" name="suspend_<!-- TMPL_VAR NAME="reservenumber" -->" value="1" />
+		<input type="hidden" name="reservenumber" value="<!-- TMPL_VAR NAME="reservenumber" -->" />
+		<label>Resume on:</label>
+		<input type="text" size="10" maxlength="10" id="resumedate" name="resumedate_<!-- TMPL_VAR NAME="reservenumber" -->" />
+		<label for="resumedate">( Optional, use format MM-DD-YYYY )</label>
       </tr>
   <!-- /TMPL_LOOP --> <!-- existing reserveloop -->
      </table>
@@ -600,8 +608,40 @@ function checkMultiHold() {
 <!-- /TMPL_IF -->
 <!-- /TMPL_UNLESS -->
 <!-- /TMPL_IF -->
+
+<!-- TMPL_IF Name="suspended_reserves_loop" -->
+<fieldset class="rows left">
+	<legend>Suspended Holds</legend>
+	<table>
+		<tr>
+			<th>Priority</th>
+			<th>Patron</th>
+			<th>Notes</th>
+		        <th>Date</th>
+		        <th>Pick up Library</th>
+			<th>Resume Date</th>
+			<th>&nbsp</th>
+	      	</tr>
+
+		<!-- TMPL_LOOP NAME="suspended_reserves_loop" -->
+			<tr>
+				<td><!-- TMPL_VAR NAME="priority" --></td>
+				<td><!-- TMPL_VAR NAME="firstname" --> <!-- TMPL_VAR NAME="surname" --></td>
+				<td><!-- TMPL_VAR NAME="reservenotes" --></td>
+				<td><!-- TMPL_VAR NAME="reservedate" --></td>
+				<td><!-- TMPL_VAR NAME="branchcode" --></td>
+				<th><!-- TMPL_VAR NAME="waitingdate" --></td>
+				<td><a href="request.pl?action=resume&reservenumber=<!-- TMPL_VAR NAME="reservenumber"-->&biblionumber=<!-- TMPL_VAR NAME="biblionumber"-->">Resume Hold</a></td>				
+			</tr>
+		<!-- /TMPL_LOOP -->
+	</table>
+</fieldset>
+<!-- /TMPL_IF -->
+
 </div>
 </div>
+
+
 
 <div class="yui-b">
 <!-- TMPL_UNLESS NAME="multi_hold" -->
