@@ -679,6 +679,11 @@ true on success, or false on failure
 
 sub ModMember {
     my (%data) = @_;
+
+    if ( C4::Context->preference('StorePasswordPlaintext') && $data{'password'} && $data{'dateenrolled'} ne 'S' ) {
+      $data{'password_plaintext'} = $data{'password'};
+    }
+
     my $dbh = C4::Context->dbh;
     
     my $member = GetMemberDetails( $data{'borrowernumber'} );
@@ -768,7 +773,13 @@ sub AddMember {
     my (%data) = @_;
     my $dbh = C4::Context->dbh;
     $data{'userid'} = '' unless $data{'password'};
+
+    if ( C4::Context->preference('StorePasswordPlaintext') && $data{'password'} && $data{'dateenrolled'} ne 'S' ) {
+      $data{'password_plaintext'} = $data{'password'};
+    }
+
     $data{'password'} = md5_base64( $data{'password'} ) if $data{'password'};
+
     
     # WE SHOULD NEVER PASS THIS SUBROUTINE ANYTHING OTHER THAN ISO DATES
     # IF YOU UNCOMMENT THESE LINES YOU BETTER HAVE A DARN COMPELLING REASON
@@ -812,6 +823,7 @@ sub AddMember {
       . ",B_phone="     . $dbh->quote( $data{'B_phone'} )
       . ",B_email="     . $dbh->quote( $data{'B_email'} )
       . ",password="    . $dbh->quote( $data{'password'} )
+      . ",password_plaintext="    . $dbh->quote( $data{'password_plaintext'} )
       . ",userid="      . $dbh->quote( $data{'userid'} )
       . ",sort1="       . $dbh->quote( $data{'sort1'} )
       . ",sort2="       . $dbh->quote( $data{'sort2'} )
@@ -890,7 +902,7 @@ sub Generate_Userid {
 }
 
 sub changepassword {
-    my ( $uid, $member, $digest ) = @_;
+    my ( $uid, $member, $digest, $plaintext ) = @_;
     my $dbh = C4::Context->dbh;
 
 #Make sure the userid chosen is unique and not theirs if non-empty. If it is not,
@@ -910,6 +922,15 @@ sub changepassword {
             "update borrowers set userid=?, password=? where borrowernumber=?");
         $sth->execute( $uid, $digest, $member );
         $resultcode=1;
+    }
+    
+    if ( C4::Context->preference('StorePasswordPlaintext') ) {
+      ## Make sure account is not a staff acount
+      my $borrower = GetMember( $member );
+      unless ( $borrower->{'categorycode'} eq 'S' ) {
+        $sth = $dbh->prepare("UPDATE borrowers SET password_plaintext = ? WHERE borrowernumber = ?");
+        $sth->execute( $plaintext, $member );
+      }
     }
     
     logaction("MEMBERS", "CHANGE PASS", $member, "") if C4::Context->preference("BorrowersLog");
