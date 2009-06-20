@@ -66,8 +66,22 @@ function showhide(id){
 </script>
 
 <!-- TMPL_INCLUDE NAME="calendar.inc" -->
+
+<!-- TMPL_IF NAME="CheckoutTimeout" -->
+  <script type="text/javascript">
+    function displaymessage() {
+      clearTimeout( mesg_timeout );
+      if ( confirm('Circ Timeout - Is this still the same patron?') ) { 
+        window.location = '/cgi-bin/koha/circ/circulation.pl';
+      } else {
+        mesg_timeout = setTimeout('displaymessage()', <!-- TMPL_VAR NAME="CheckoutTimeout" --> * 1000);
+      }
+    }
+  </script>
+<!-- /TMPL_IF -->
+
 </head>
-<body>
+<body <!-- TMPL_IF NAME="CheckoutTimeout" -->onload="mesg_timeout = setTimeout('displaymessage()', <!-- TMPL_VAR NAME="CheckoutTimeout" --> * 1000)" <!-- /TMPL_IF --> >
 
 <!-- TMPL_INCLUDE NAME="header.inc" -->
 <!-- TMPL_INCLUDE NAME="circ-search.inc" -->
