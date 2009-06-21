@@ -56,6 +56,7 @@ $( document ).ready( function( ){
     if ( profile.added_items ) {
       $( '#profile-items-num-added' ).text( profile.added_items );
       $( '#profile-items-info' ).show();
+      $( '#add-items input[name=include_items_from_profile]' ).val( 1 );
     } else {
       $( '#profile-items-info:visible' ).hide();
     }
@@ -67,6 +68,7 @@ $( document ).ready( function( ){
       console.log( modified_subfields );
       $( '#profile-actions-subfields' ).text( modified_subfields.join( ', ' ) );
       $( '#profile-actions-info' ).show();
+        $( '#modify-subfields input[name=include_actions_from_profile]' ).val( 1 );
     } else {
       $( '#profile-actions-info:visible' ).hide();
     }
@@ -163,6 +165,39 @@ $( document ).ready( function () {
     }
   } );
   $( '.remove-item' ).click( remove_item );
+  $( '#profile-items-modify' ).click( function () {
+    $.ajax( {
+      type: 'GET',
+      url: '/cgi-bin/koha/tools/stage-marc-import.pl',
+      dataType: 'html',
+      data: { profile: $( '#profile' ).val(), retrieve: 'profile-items' },
+      success: function ( data ) {
+        $( data )
+          .find( '.remove-item' ).click( remove_item ).end()
+          .insertBefore( '#item-0' );
+        $( '#profile-items-info' ).hide();
+        $( '#modify-subfields input[name=include_items_from_profile]' ).val( 0 );
+      }
+    } );
+    return false;
+  } );
+  $( '#profile-actions-modify' ).click( function () {
+    $.ajax( {
+      type: 'GET',
+      url: '/cgi-bin/koha/tools/stage-marc-import.pl',
+      dataType: 'html',
+      data: { profile: $( '#profile' ).val(), retrieve: 'profile-actions' },
+      success: function ( data ) {
+        var new_actions = $( data );
+        bind_subfield_actions( new_actions );
+        new_actions.appendTo( '#subfield-actions' )
+          .find( 'select' ).change().end();
+        $( '#profile-actions-info' ).hide();
+        $( '#modify-subfields input[name=include_actions_from_profile]' ).val( 0 );
+      }
+    } );
+    return false;
+  } );
 } );
 //]]>
 </script>

@@ -58,8 +58,17 @@ my $comments = $input->param('comments');
 my $syntax = $input->param('syntax');
 my $profile = $input->param('profile');
 my $new_profile_name = $input->param('new_profile_name');
+my $retrieve = $input->param('retrieve') || '';
+
+my $template_name = "tools/stage-marc-import.tmpl";
+if ( $retrieve eq 'profile-items' ) {
+    $template_name = 'tools/pieces/import-profile-items.tmpl';
+} elsif ( $retrieve eq 'profile-actions' ) {
+    $template_name = 'tools/pieces/import-profile-actions.tmpl';
+}
+
 my ($template, $loggedinuser, $cookie)
-	= get_template_and_user({template_name => "tools/stage-marc-import.tmpl",
+	= get_template_and_user({template_name => $template_name,
 					query => $input,
 					type => "intranet",
 					authnotrequired => 0,
@@ -67,10 +76,28 @@ my ($template, $loggedinuser, $cookie)
 					debug => 1,
 					});
 
+my $tagslib = &GetMarcStructure(1, ''); # Assuming default framework
+
+if ( $retrieve ) {
+    if ( $retrieve eq 'profile-items' ) {
+        $template->param( items => [ map {
+            my $item_index = int(rand(10000000));
+            +{ item_index => $item_index, item => C4::Form::AddItem::get_form_values( $tagslib, $item_index, {
+                item => $_,
+                omit => [ 'items.barcode' ],
+                allow_repeatable => 0,
+            } ) };
+        } GetImportProfileItems( $profile ) ] );
+    } elsif ( $retrieve eq 'profile-actions' ) {
+        $template->param( actions => [ GetImportProfileSubfieldActions( $profile ) ] );
+    }
+    output_html_with_http_headers $input, $cookie, $template->output;
+    exit;
+}
+
 $template->param(SCRIPT_NAME => $ENV{'SCRIPT_NAME'},
 						uploadmarc => $fileID);
 
-my $tagslib = &GetMarcStructure(1, ''); # Assuming default framework
 my %cookies = parse CGI::Cookie($cookie);
 my $sessionID = $cookies{'CGISESSID'}->value;
 if ($completedJobID) {
@@ -110,7 +137,7 @@ if ($completedJobID) {
 
 	if ( $new_profile_name ) {
 		$new_profile_name =~ s/^\s+|\s+$//g;
-		AddImportProfile( $new_profile_name, $matcher_id, undef, $overlay_action, $nomatch_action, $parse_items, $item_action );
+		AddImportProfile( $new_profile_name, $matcher_id, undef, $overlay_action, $nomatch_action, $parse_items, $item_action, \@additional_items, \@subfield_actions );
 	}
 
     if ($runinbackground) {
@@ -156,7 +183,8 @@ if ($completedJobID) {
     # FIXME branch code
     my ($batch_id, $num_valid, $num_items, @import_errors) = BatchStageMarcRecords($syntax, $marcrecord, $filename, 
                                                                                    $comments, '', $parse_items, 0,
-                                                                                   50, staging_progress_callback($job, $dbh));
+                                                                                   50, \@additional_items, \@subfield_actions,
+                                                                                   staging_progress_callback($job, $dbh));
     $dbh->commit();
     my $num_with_matches = 0;
     my $checked_matches = 0;
@@ -235,4 +263,25 @@ sub matching_progress_callback {
         $job->progress($start_progress + $progress);
         $dbh->commit();
     }
+}
+
+sub get_subfield_actions {
+    my ($input) = @_;
+
+    my @types = $input->param( 'action_type' );
+    my @tags = $input->param( 'action_tag' );
+    my @subfields = $input->param( 'action_subfield' );
+    my @contents = $input->param( 'action_contents' );
+    my @results;
+
+    foreach my $i ( 0..$#types ) {
+        push @results, {
+            action => $types[$i],
+            tag => $tags[$i],
+            subfield => $subfields[$i],
+            contents => $contents[$i],
+        };
+    }
+
+    return @results;
 }

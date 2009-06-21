@@ -22,6 +22,7 @@ use warnings;
 
 use C4::Context;
 use C4::Koha;
+use C4::Dates;
 use C4::Biblio;
 use C4::Items;
 use C4::Charset;
@@ -71,6 +72,8 @@ BEGIN {
     AddImportProfile
     GetImportProfile
     GetImportProfileLoop
+    GetImportProfileItems
+    GetImportProfileSubfieldActions
 	);
 }
 
@@ -210,6 +213,25 @@ sub AddBiblioToBatch {
     my $encoding = shift;
     my $z3950random = shift;
     my $update_counts = @_ ? shift : 1;
+    my $subfield_actions = @_ ? shift : [];
+
+    foreach my $action (@$subfield_actions) {
+        my @fields = $marc_record->field($action->{'tag'});
+        if ( $action->{'action'} eq 'delete' ) {
+            foreach my $field (@fields) {
+                $field->delete_subfield(code => $action->{'subfield'});
+            }
+        } elsif ( $action->{'action'} eq 'add_always' ) {
+            foreach my $field (@fields) {
+                $field->add_subfields($action->{'subfield'}, $action->{'contents'});
+            }
+        } elsif ( $action->{'action'} eq 'add' ) {
+            foreach my $field (@fields) {
+                next if ($field->subfield($action->{'subfield'}));
+                $field->add_subfields($action->{'subfield'}, $action->{'contents'});
+            }
+        }
+    }
 
     my $import_record_id = _create_import_record($batch_id, $record_sequence, $marc_record, 'biblio', $encoding, $z3950random);
     _add_biblio_fields($import_record_id, $marc_record);
@@ -257,6 +279,8 @@ sub  BatchStageMarcRecords {
     my $branch_code = shift;
     my $parse_items = shift;
     my $leave_as_staging = shift;
+    my $added_items = shift;
+    my $subfield_actions = shift;
    
     # optional callback to monitor status 
     # of job
@@ -281,6 +305,8 @@ sub  BatchStageMarcRecords {
     my $num_items = 0;
     # FIXME - for now, we're dealing only with bibs
     my $rec_num = 0;
+    my ($barcode_tag, $barcode_subfield) = &GetMarcFromKohaField( "items.barcode", '' );
+    my (undef, $dateaccessioned_subfield) = &GetMarcFromKohaField( "items.dateaccessioned", '' );
     foreach my $marc_blob (split(/\x1D/, $marc_records)) {
         $marc_blob =~ s/^\s+//g;
         $marc_blob =~ s/\s+$//g;
@@ -296,7 +322,17 @@ sub  BatchStageMarcRecords {
             push @invalid_records, $marc_blob;
         } else {
             $num_valid++;
-            $import_record_id = AddBiblioToBatch($batch_id, $rec_num, $marc_record, $marc_flavor, int(rand(99999)), 0);
+            $import_record_id = AddBiblioToBatch($batch_id, $rec_num, $marc_record, $marc_flavor, int(rand(99999)), 0, $subfield_actions);
+            if (@$added_items) {
+                foreach my $item ( @$added_items ) {
+                    $item->field($barcode_tag)->add_subfields(
+                        $barcode_subfield => 'acq' . int(rand(100000000)),
+                        $dateaccessioned_subfield => C4::Dates->today()
+                    );
+                    my @import_items_ids = AddItemsToImportBiblio($batch_id, $import_record_id, $item, 0);
+                    $num_items += scalar(@import_items_ids);
+                }
+            }
             if ($parse_items) {
                 my @import_items_ids = AddItemsToImportBiblio($batch_id, $import_record_id, $marc_record, 0);
                 $num_items += scalar(@import_items_ids);
@@ -1225,7 +1261,7 @@ sub SetImportRecordMatches {
 }
 
 sub AddImportProfile {
-    my ($description, $matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action) = @_;
+    my ($description, $matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action, $added_items, $subfield_actions) = @_;
 
     my $dbh = C4::Context->dbh;
 
@@ -1242,14 +1278,45 @@ sub AddImportProfile {
         ");
 
         $sth->execute($matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action, $profile_id);
+        $dbh->do("
+            DELETE
+              FROM import_profile_added_items
+              WHERE profile_id = ?
+        ", {}, $profile_id);
+        $dbh->do("
+            DELETE
+              FROM import_profile_subfield_actions
+              WHERE profile_id = ?
+        ", {}, $profile_id);
     } else {
         $sth = $dbh->prepare("
             INSERT
               INTO import_profiles(description, matcher_id, template_id, overlay_action, nomatch_action, parse_items, item_action)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
+              VALUES(?, ?, ?, ?, ?, ?, ?)
         ");
 
         $sth->execute($description, $matcher_id, $template_id, $overlay_action, $nomatch_action, $parse_items, $item_action);
+        $profile_id = $dbh->{mysql_insertid};
+    }
+
+    $sth = $dbh->prepare("
+        INSERT
+          INTO import_profile_added_items(profile_id, marcxml)
+          VALUES(?, ?)
+    ");
+
+    foreach my $item (@$added_items) {
+        $sth->execute($profile_id, $item->as_xml());
+    }
+
+    $sth = $dbh->prepare("
+        INSERT
+          INTO import_profile_subfield_actions(profile_id, tag, subfield, action, contents)
+          VALUES(?, ?, ?, ?, ?)
+    ");
+
+    foreach my $action (@$subfield_actions) {
+        $sth->execute($profile_id, $action->{'tag'}, $action->{'subfield'}, $action->{'action'}, $action->{'contents'});
     }
 }
 
@@ -1295,6 +1362,35 @@ sub GetImportProfileLoop {
     }
 
     return \@profiles;
+}
+
+sub GetImportProfileItems {
+    my ( $profile_id ) = @_;
+    my $dbh = C4::Context->dbh;
+
+    return map { MARC::Record::new_from_xml( $_, 'UTF-8' ) } @{ $dbh->selectcol_arrayref( "
+        SELECT
+          marcxml
+          FROM import_profile_added_items
+          WHERE profile_id = ?
+    ", {}, $profile_id ) };
+}
+
+sub GetImportProfileSubfieldActions {
+    my ( $profile_id ) = @_;
+    my $dbh = C4::Context->dbh;
+
+    return map {
+        +{
+            "action_type_" . $_->{'action_type'} => 1,
+            %$_
+        };
+    } @{ $dbh->selectall_arrayref( "
+        SELECT
+          tag as action_tag, subfield as action_subfield, action as action_type, contents as action_contents
+          FROM import_profile_subfield_actions
+          WHERE profile_id = ?
+    ", { Slice => {} }, $profile_id ) };  
 }
 
 # internal functions
