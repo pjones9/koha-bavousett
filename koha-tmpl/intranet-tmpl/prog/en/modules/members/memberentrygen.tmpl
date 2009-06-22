@@ -813,31 +813,36 @@
 		</li>
 		<li>
 			<!-- TMPL_IF NAME="mandatorypassword" -->
-			<label for="password" class="required">
+				<label for="password" class="required">
 			<!--TMPL_ELSE-->
-			<label for="password">
+				<label for="password">
 			<!-- /TMPL_IF-->
 			Password: </label>
+		
 			<!--TMPL_IF NAME="opadd"-->
-			<!-- TMPL_IF NAME="NoUpdateLogin" -->
-				<input type="text" id="password" name="password" size="20"  disabled="disabled" value="<!-- TMPL_VAR NAME="password" -->" />
-<!-- TMPL_ELSE -->
-				<input type="text" id="password" name="password" size="20" value="<!-- TMPL_VAR NAME="password" -->" />
-<!-- /TMPL_IF -->
-			<!--TMPL_ELSE-->
-			<!--TMPL_IF NAME="password"-->
 				<!-- TMPL_IF NAME="NoUpdateLogin" -->
-					<input type="text" id="password" name="password" size="20"  disabled="disabled" value="****" />
+					<input type="text" id="password" name="password" size="20"  disabled="disabled" value="<!-- TMPL_VAR NAME="password" -->" />
 				<!-- TMPL_ELSE -->
-					<input type="text" id="password" name="password" size="20" value="****" />
+					<input type="text" id="password" name="password" size="20" value="<!-- TMPL_VAR NAME="password" -->" />
 				<!-- /TMPL_IF -->
 			<!--TMPL_ELSE-->
-				<!-- TMPL_IF NAME="NoUpdateLogin" -->
-					<input type="text" id="password" name="password" size="20"  disabled="disabled" value="" />
-				<!-- TMPL_ELSE -->
-					<input type="text" id="password" name="password" size="20" value="" />
-				<!-- /TMPL_IF -->
-			<!--/TMPL_IF-->
+				<!--TMPL_IF NAME="password"-->
+					<!-- TMPL_IF NAME="NoUpdateLogin" -->
+						<input type="text" id="password" name="password" size="20"  disabled="disabled" value="****" />
+					<!-- TMPL_ELSE -->
+						<!-- TMPL_IF NAME="StorePasswordPlaintext" -->
+							<input type="text" id="password" name="password" size="20" value="<!-- TMPL_VAR NAME="password_plaintext" -->" />
+						<!-- TMPL_ELSE -->
+							<input type="text" id="password" name="password" size="20" value="****" />
+						<!-- /TMPL_IF -->
+					<!-- /TMPL_IF -->
+				<!--TMPL_ELSE-->
+					<!-- TMPL_IF NAME="NoUpdateLogin" -->
+						<input type="text" id="password" name="password" size="20"  disabled="disabled" value="" />
+					<!-- TMPL_ELSE -->
+						<input type="text" id="password" name="password" size="20" value="" />
+					<!-- /TMPL_IF -->
+				<!--/TMPL_IF-->
 			<!--/TMPL_IF-->
 	  <!-- TMPL_IF NAME="mandatorypassword" --><span class="required">Required</span><!-- /TMPL_IF --><!-- TMPL_IF NAME="ERROR_short_password" --><span class="required">Password is too short</span><!-- /TMPL_IF -->
 <!-- TMPL_IF NAME="minPasswordLength" --><div class="hint">Minimum password length: <!-- TMPL_VAR NAME="minPasswordLength" --></div><!-- /TMPL_IF -->
