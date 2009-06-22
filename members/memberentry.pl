@@ -101,8 +101,15 @@ foreach (@field_check) {
 $template->param("add"=>1) if ($op eq 'add');
 $template->param("checked" => 1) if (defined($nodouble) && $nodouble eq 1);
 ($borrower_data = GetMember($borrowernumber,'borrowernumber')) if ($op eq 'modify' or $op eq 'save');
+
+
 my $categorycode  = $input->param('categorycode') || $borrower_data->{'categorycode'};
 my $category_type = $input->param('category_type');
+
+if ( $borrowernumber && C4::Context->preference('StorePasswordPlaintext') && $category_type ne 'S' ) {
+  $template->param( 'StorePasswordPlaintext' => 1 );
+}
+
 my $new_c_type = $category_type; #if we have input param, then we've already chosen the cat_type.
 unless ($category_type or !($categorycode)){
     my $borrowercategory = GetBorrowercategory($categorycode);
