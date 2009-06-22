@@ -81,9 +81,8 @@ if ( $newpassword  && ! $errormsg ) {
 	$defaultnewpassword.=substr($chars, int(rand(length($chars))),1);
     }
 
-    if ( C4::Context->preference('StorePasswordPlaintext') && $bor->{'category_type'} ne 'S' ) {
+    if ( C4::Context->preference('StorePasswordPlaintext') ) {
     	$defaultnewpassword = $bor->{'password_plaintext'};
-    	$template->param( 'PasswordPlaintext' => 1 );
     }
 	
     if ( $bor->{'category_type'} eq 'C') {
