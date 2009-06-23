@@ -147,7 +147,7 @@ my $strsth =
 reserves.found IS NULL
  $sqldatewhere
 AND items.itemnumber NOT IN (SELECT itemnumber FROM branchtransfers where datearrived IS NULL)
-AND items.itemnumber NOT IN (SELECT itemnumber FROM issues)
+AND items.itemnumber NOT IN (SELECT itemnumber FROM issues WHERE itemnumber IS NOT NULL)
 AND reserves.priority <> 0 
 AND notforloan = 0 AND damaged = 0 AND itemlost = 0 AND wthdrawn = 0
 ";
