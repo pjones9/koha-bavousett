@@ -227,16 +227,16 @@ sub _GetIssuingRule {
   my $issuingrule = _CheckForIssuingRule( $categorycode, $itemtype, $holdingbranch );
   if ( $issuingrule ) { return $issuingrule; }
 
-  my $issuingrule = _CheckForIssuingRule( $categorycode, '', $holdingbranch );
+  $issuingrule = _CheckForIssuingRule( $categorycode, '', $holdingbranch );
   if ( $issuingrule ) { return $issuingrule; }
 
-  my $issuingrule = _CheckForIssuingRule( '', $itemtype, $holdingbranch );
+  $issuingrule = _CheckForIssuingRule( '', $itemtype, $holdingbranch );
   if ( $issuingrule ) { return $issuingrule; }
 
-  my $issuingrule = _CheckForIssuingRule( '', '', $holdingbranch );
+  $issuingrule = _CheckForIssuingRule( '', '', $holdingbranch );
   if ( $issuingrule ) { return $issuingrule; }
 
-  my $issuingrule = _CheckForIssuingRule( '', '', '' );
+  $issuingrule = _CheckForIssuingRule( '', '', '' );
   return $issuingrule;
 
 }
