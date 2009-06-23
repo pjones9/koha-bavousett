@@ -10,7 +10,7 @@
 <script type="text/javascript">
 //<![CDATA[
 $(document).ready(function(){
-	//$("#processfile").hide();
+	$("#processfile").hide();
 	$("#uploadfile").submit(function(){
 		alert("Hey!");
 	});
@@ -279,7 +279,7 @@ $( document ).ready( function () {
     <form method="post" id="processfile" action="<!-- TMPL_VAR name="SCRIPT_NAME" -->" enctype="multipart/form-data">
 <fieldset class="rows">
         <input type="hidden" name="uploadedfileid" id="uploadedfileid" value="" />
-        <input type="hidden" name="runinbackground" id="runinbackground" value="" />
+		<!-- <input type="hidden" name="runinbackground" id="runinbackground" value="" /> -->
         <input type="hidden" name="completedJobID" id="completedJobID" value="" />
 	<ol><li>
 		<label for="comments">Comments about this file: </label>

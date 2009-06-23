@@ -71,7 +71,7 @@ my ($template, $loggedinuser, $cookie)
 	= get_template_and_user({template_name => $template_name,
 					query => $input,
 					type => "intranet",
-					authnotrequired => 0,
+					authnotrequired => 1,
 					flagsrequired => {tools => 'stage_marc_import'},
 					debug => 1,
 					});
@@ -183,8 +183,8 @@ if ($completedJobID) {
     # FIXME branch code
     my ($batch_id, $num_valid, $num_items, @import_errors) = BatchStageMarcRecords($syntax, $marcrecord, $filename, 
                                                                                    $comments, '', $parse_items, 0,
-                                                                                   50, \@additional_items, \@subfield_actions,
-                                                                                   staging_progress_callback($job, $dbh));
+                                                                                   \@additional_items, \@subfield_actions,
+                                                                                   50, staging_progress_callback($job, $dbh));
     $dbh->commit();
     my $num_with_matches = 0;
     my $checked_matches = 0;
@@ -266,7 +266,7 @@ sub matching_progress_callback {
 }
 
 sub get_subfield_actions {
-    my ($input) = @_;
+    my ( $input ) = @_;
 
     my @types = $input->param( 'action_type' );
     my @tags = $input->param( 'action_tag' );
@@ -275,6 +275,7 @@ sub get_subfield_actions {
     my @results;
 
     foreach my $i ( 0..$#types ) {
+		next unless ( $tags[$i] && $subfields[$i] );
         push @results, {
             action => $types[$i],
             tag => $tags[$i],

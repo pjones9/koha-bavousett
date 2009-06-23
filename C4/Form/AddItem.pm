@@ -111,7 +111,7 @@ sub get_all_items {
 
     my @items = $input->param( 'items' );
 
-    return map { get_item_record( $input, $frameworkcode, $_ ) } @items;
+    return map { my ($item_record, $not_unique) = get_item_record( $input, $frameworkcode, $_ ); $item_record } @items;
 }
 
 =head2 set_form_values

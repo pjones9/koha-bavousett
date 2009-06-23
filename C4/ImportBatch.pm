@@ -325,15 +325,15 @@ sub  BatchStageMarcRecords {
             $import_record_id = AddBiblioToBatch($batch_id, $rec_num, $marc_record, $marc_flavor, int(rand(99999)), 0, $subfield_actions);
             if (@$added_items) {
                 foreach my $item ( @$added_items ) {
-                    $item->field($barcode_tag)->add_subfields(
+                    my $field = $item->field($barcode_tag);
+					$field->add_subfields(
                         $barcode_subfield => 'acq' . int(rand(100000000)),
                         $dateaccessioned_subfield => C4::Dates->today()
                     );
-                    my @import_items_ids = AddItemsToImportBiblio($batch_id, $import_record_id, $item, 0);
-                    $num_items += scalar(@import_items_ids);
+					$marc_record->append_fields($field);
                 }
             }
-            if ($parse_items) {
+            if ($parse_items || @$added_items) {
                 my @import_items_ids = AddItemsToImportBiblio($batch_id, $import_record_id, $marc_record, 0);
                 $num_items += scalar(@import_items_ids);
             }
