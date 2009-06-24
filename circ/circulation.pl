@@ -25,7 +25,7 @@ use strict;
 use CGI;
 use C4::Output;
 use C4::Print;
-use C4::Auth qw/:DEFAULT get_session/;
+use C4::Auth qw/:DEFAULT get_session check_override_perms/;
 use C4::Dates qw/format_date/;
 use C4::Overdues qw( GetFinesSummary );
 use List::Util qw( sum );
@@ -113,7 +113,7 @@ my ( $template, $loggedinuser, $cookie ) = get_template_and_user (
         query           => $query,
         type            => "intranet",
         authnotrequired => 0,
-        flagsrequired   => { circulate => 'circulate_remaining_permissions' },
+        flagsrequired   => { circulate => '*' },
     }
 );
 
@@ -152,7 +152,17 @@ my $cancelreserve  = $query->param('cancelreserve');
 my $organisation   = $query->param('organisations');
 my $print          = $query->param('print');
 my $newexpiry      = $query->param('dateexpiry');
-my $debt_confirmed = $query->param('debt_confirmed') || 0; # Don't show the debt error dialog twice
+
+my $circ_session = {
+    debt_confirmed => $query->param('debt_confirmed') || 0, # Don't show the debt error dialog twice
+    charges_overridden => $query->param('charges_overridden') || 0,
+    override_user => $query->param('override_user') || '',
+    override_pass => $query->param('override_pass'),
+};
+
+if ( !override_can( $circ_session, 'override_max_fines' ) ) {
+     $circ_session->{'charges_overridden'} = 0;
+}
 
 # Check if stickyduedate is turned off
 if ( $barcode ) {
@@ -266,6 +276,9 @@ if ($borrowernumber) {
     if ( C4::Context->preference('CheckoutTimeout') ) {
       $template->param( CheckoutTimeout => C4::Context->preference('CheckoutTimeout') );
     }
+    if ( $circ_session->{'override_user'} ) {
+        $template->param( flagged => 1 );
+    }
 
     $borrower = GetMemberDetails( $borrowernumber, 0 );
     my ( $od, $issue, $fines ) = GetMemberIssuesAndFines( $borrowernumber );
@@ -320,7 +333,9 @@ if ($barcode) {
     CanBookBeIssued( $borrower, $barcode, $datedue , $inprocess );
   my $blocker = $invalidduedate ? 1 : 0;
 
-  delete $question->{'DEBT'} if ($debt_confirmed);
+  delete $question->{'DEBT'} if ($circ_session->{'debt_confirmed'});
+  granular_overrides($circ_session, $error, $question);
+
   foreach my $impossible ( keys %$error ) {
             $template->param(
                 $impossible => $$error{$impossible},
@@ -362,7 +377,7 @@ if ($barcode) {
 
 # reload the borrower info for the sake of reseting the flags.....
 if ($borrowernumber) {
-    $borrower = GetMemberDetails( $borrowernumber, 0 );
+    $borrower = GetMemberDetails( $borrowernumber, 0, $circ_session );
 }
 
 ##################################################################################
@@ -580,6 +595,8 @@ if ($borrowerslist) {
 
 #title
 my $flags = $borrower->{'flags'};
+my $allow_override_login = C4::Context->preference( 'AllowOverrideLogin' );
+
 foreach my $flag ( sort keys %$flags ) {
     $template->param( flagged=> 1);
     $flags->{$flag}->{'message'} =~ s#\n#<br />#g;
@@ -606,6 +623,9 @@ foreach my $flag ( sort keys %$flags ) {
             );
 
             $template->param( FormatFinesSummary( $borrower ) );
+            if ( override_can( $circ_session, 'override_max_fines' ) ) {
+                $template->param( charges_override => 1 );
+            }
         }
         elsif ( $flag eq 'CREDITS' ) {
             $template->param(
@@ -758,11 +778,50 @@ if ( scalar( @canned_notes ) ) {
 }
 
 $template->param(
-    debt_confirmed            => $debt_confirmed,
+    override_user             => $circ_session->{'override_user'},
+    override_pass             => $circ_session->{'override_pass'},
+    charges_overridden        => $circ_session->{'charges_overridden'},
+    debt_confirmed            => $circ_session->{'debt_confirmed'},
     SpecifyDueDate            => $duedatespec_allow,
     CircAutocompl             => C4::Context->preference("CircAutocompl"),
-	AllowRenewalLimitOverride => C4::Context->preference("AllowRenewalLimitOverride"),
+	AllowRenewalLimitOverride => override_can( $circ_session, "override_renewals" ) && C4::Context->preference("AllowRenewalLimitOverride"),
+    show_override             => $borrowernumber && C4::Context->preference("AllowOverrideLogin") && !$circ_session->{'override_user'},
     dateformat                => C4::Context->preference("dateformat"),
     DHTMLcalendar_dateformat  => C4::Dates->DHTMLcalendar(),
 );
 output_html_with_http_headers $query, $cookie, $template->output;
+
+sub granular_overrides {
+    my ($circ_session, $error, $question) = @_;
+    if ($question->{TOO_MANY} ) {
+        if (!override_can('override_checkout_max')) {
+            $error->{TOO_MANY} = $question->{TOO_MANY};
+            delete $question->{TOO_MANY};
+        }
+    }
+    if ($question->{NOT_FOR_LOAN_FORCING} ) {
+        if (!override_can('override_non_circ')) {
+            $error->{NOT_FOR_LOAN} = $question->{NOT_FOR_LOAN_FORCING};
+            delete $question->{NOT_FOR_LOAN_FORCING};
+        }
+    }
+    if ($error->{NO_MORE_RENEWALS} ) {
+        if (override_can('override_max_renewals')) {
+            $question->{NO_MORE_RENEWALS_FORCING} = $error->{NO_MORE_RENEWALS};
+            delete $error->{NO_MORE_RENEWALS};
+        }
+    }
+
+    return;
+}
+
+sub override_can {
+    my ( $circ_session, $subperm ) = @_;
+
+    return check_override_perms(
+        C4::Context->userenv->{id},
+        $circ_session->{'override_user'},
+        $circ_session->{'override_pass'},
+        { circulate => $subperm }
+    );
+}
