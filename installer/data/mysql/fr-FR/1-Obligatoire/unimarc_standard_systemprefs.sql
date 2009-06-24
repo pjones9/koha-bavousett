@@ -242,6 +242,7 @@ INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('L
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('LibraryThingForLibrariesEnabled','0','Enable or Disable Library Thing for Libraries Features','','YesNo'); 
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('LibraryThingForLibrariesTabbedView','0','Put LibraryThingForLibraries Content in Tabs.','','YesNo');
 INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'AllowNotForLoanOverride', '0', '', 'If ON, Koha will allow the librarian to loan a not for loan item.', 'YesNo');
+<<<<<<< HEAD:installer/data/mysql/fr-FR/1-Obligatoire/unimarc_standard_systemprefs.sql
 INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES('RenewalPeriodBase', 'date_due', 'Permet de déterminer si la période de renouvellement doit être calculée sur la date de retour ou sur le jour du renouvellement','date_due|now','Choice');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewISBD','1','Autoriser l''affichage de la vue ISBD des notices bibliographiques','','YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('viewLabeledMARC','0','Autoriser l''affichage MARC labellis des notices bibliographiques','','YesNo');
@@ -254,3 +255,7 @@ INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanatio
 INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'AllowReadingHistoryAnonymizing', '0', '', 'Allows a borrower to optionally delete his or her reading history.', 'YesNo');
 INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ('DisplayClearScreenButton', '0', '', 'If set to yes, a clear screen button will appear on the circulation page.', 'YesNo');
 INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'CheckoutTimeout', '0', '', 'Value in seconds before a window pops up on the circ screen asking the librarian if they would like to continue using this record or to search for a new borrower.', 'Integer');
+=======
+INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'calcFineOnReturn', '0', '', 'Turns on the feature to calculate fines at the time of return and/or renewal as an alternative to the nightly cronjob fines system.', 'YesNo' );
+INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'FineOnClaimsReturned', '0', '', 'Enables an automatic fine calculation for any item checked out and then marked as ''Claimes Returned''. To enable, create LOST authorised value of ''Claims Returned'' and enter the integer value for it here.', 'Integer' );
+>>>>>>> k_ebpl_1-15:installer/data/mysql/fr-FR/1-Obligatoire/unimarc_standard_systemprefs.sql
