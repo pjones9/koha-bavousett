@@ -320,7 +320,7 @@ if ($borrowernumber) {
             $getreserv{biblionumber}  = $num_res->{'biblionumber'};	
         }
         $getreserv{waitingposition} = $num_res->{'priority'};
-
+        $getreserv{reservenumber} = $num_res->{'reservenumber'};
         push( @reservloop, \%getreserv );
     }
 
@@ -331,6 +331,7 @@ if ($borrowernumber) {
     my @suspended_reserves_loop;
     foreach my $num_res ( @suspended_reserves ) {
         my %getreserv;
+        $getreserv{waitingdate} = C4::Dates::format_date( $num_res->{'waitingdate'} );
         $getreserv{reservenumber} = $num_res->{'reservenumber'};
         my $getiteminfo  = GetBiblioFromItemNumber( $num_res->{'itemnumber'} );
         my $itemtypeinfo = getitemtypeinfo( $getiteminfo->{'itemtype'} );
