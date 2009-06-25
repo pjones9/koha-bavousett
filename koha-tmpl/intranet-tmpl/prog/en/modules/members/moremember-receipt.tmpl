@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div id="receipt">
+<div id="main">
 <B>Checkout Receipt</b><br>
 <b><!-- TMPL_VAR name="LibraryName" --></b>
 
@@ -42,7 +42,7 @@ Mins = "0" + Mins;
 document.write('<B>' + Hours + ":" + Mins + Time + '</B>');
 </SCRIPT>
 <br/><br/>
-Visit www.ebpl.org for Library info.,<br/>
+Visit www.ebpl.org for Library info,<br/>
 Koha online catalog, & more!<br/>
 <br/>
 All Renewals now by telephone,<br/>
@@ -58,10 +58,10 @@ For Information Services call 732-390-6767<br/>
 <table>
     <!-- TMPL_loop name="issueloop" -->
     <!-- TMPL_IF name="red" --><!-- TMPL_ELSE -->
-        <a href="/cgi-bin/koha/catalogue/detail.pl?item=<!-- TMPL_VAR NAME="itemnumber" -->&amp;biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->&amp;bi=<!-- TMPL_VAR NAME="biblioitemnumber" -->"><!-- TMPL_VAR NAME="title" escape="html" --></a><br/>
-	CALL NO: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
-	<!-- TMPL_VAR NAME="barcode" --><br/>
-        Due Date :: <!-- TMPL_VAR NAME="date_due" --><br/>
+	<B>Tltle: <!-- TMPL_VAR NAME="title" --></b> <br/>
+	Call No: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
+	Barcode: <!-- TMPL_VAR NAME="barcode" --><br/>
+        Due Date: <!-- TMPL_VAR NAME="date_due" --><br/>
     <!-- /TMPL_IF -->
     <!-- /TMPL_LOOP -->
 </table>
@@ -71,10 +71,10 @@ For Information Services call 732-390-6767<br/>
 <table>
     <!-- TMPL_LOOP NAME="issueloop" -->
     <!-- TMPL_IF NAME="red" -->
-        <a href="/cgi-bin/koha/catalogue/detail.pl?item=<!-- TMPL_VAR NAME="itemnumber" -->&amp;biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->&amp;bi=<!-- TMPL_VAR NAME="biblioitemnumber" -->"><!-- TMPL_VAR NAME="title" escape="html" --></a></td>
-	CALL NO: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
-    	<!-- TMPL_VAR NAME="barcode" --></td>
-	 Due Date :: <!-- TMPL_VAR NAME="date_due" --><br/>
+	<B>Title: <!-- TMPL_VAR NAME="title" --></b> <br/>
+	Call No: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
+    	Barcode: <!-- TMPL_VAR NAME="barcode" --> <br/>
+	Due Date: <!-- TMPL_VAR NAME="date_due" --><br/>
     <!-- /TMPL_IF -->
     <!-- /TMPL_LOOP -->
 </table>
