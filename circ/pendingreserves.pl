@@ -66,8 +66,9 @@ my $author;
 my ( $year, $month, $day ) = Today();
 my $todaysdate     = sprintf("%-04.4d-%-02.2d-%02.2d", $year, $month, $day);
 my $yesterdaysdate = sprintf("%-04.4d-%-02.2d-%02.2d", Add_Delta_YMD($year, $month, $day,   0, 0, -1));
-#changed from delivered range of 10 years-yesterday to 1 days ago-today
-my $pastdate = $yesterdaysdate;
+#changed from delivered range of 10 years-yesterday to 2 days ago-today
+# Find two days ago for the default shelf pull start and end dates
+my $pastdate       = sprintf("%-04.4d-%-02.2d-%02.2d", Add_Delta_YMD($year, $month, $day, 0, 0, -2));
 
 #		Predefine the start and end dates if they are not already defined
 $startdate =~ s/^\s+//;

@@ -250,6 +250,16 @@ foreach my $tag (sort keys %{$tagslib}) {
     }
 
     $value = '' if (($op eq "addadditionalitem") && ($tagslib->{$tag}->{$subfield}->{lib} eq "Barcode"));
+# Void out and/or reset some fields in the creation of a copy of a new item
+    if ($op eq "addadditionalitem") {
+      if (($tagslib->{$tag}->{$subfield}->{lib} eq 'Withdrawn status') ||
+          ($tagslib->{$tag}->{$subfield}->{lib} eq 'Lost status') ||
+          ($tagslib->{$tag}->{$subfield}->{lib} eq 'Damaged status') ||
+          ($tagslib->{$tag}->{$subfield}->{lib} eq 'Barcode')) {
+            $value = '';
+      }
+      $value = $today_iso if ($tagslib->{$tag}->{$subfield}->{lib} eq 'Date acquired');
+    }
     my $attributes_no_value = qq(tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255" );
     my $attributes          = qq($attributes_no_value value="$value" );
     if ( $tagslib->{$tag}->{$subfield}->{authorised_value} ) {
