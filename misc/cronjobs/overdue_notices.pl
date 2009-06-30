@@ -505,18 +505,16 @@ END_SQL
     if (@output_chunks) {
         if ($nomail) {
             if ( defined $csvfilename ) {
-                print $csv_fh @output_chunks;
+                printf $csv_fh @output_chunks;
             } elsif ( defined $htmlfilename ) {
-                print $html_fh @output_chunks;
+                printf $html_fh @output_chunks;
             } else {
                 local $, = "\f";    # pagebreak
                 print @output_chunks;
             }
-        } 
-        elsif ( defined $htmlfilename ) {
-            print $html_fh @output_chunks;        
-        }
-        else {
+        } elsif ( defined $htmlfilename ) {
+            printf $html_fh @output_chunks;
+        } else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
                 type => 'text/plain',
@@ -544,7 +542,7 @@ END_SQL
     $rqoverduerules->execute($branchcode);
     # my $outfile = 'overdues_' . ( $mybranch || $branchcode || 'default' );
     while ( my $overdue_rules = $rqoverduerules->fetchrow_hashref ) {
-      PERIOD: foreach my $i ( 1 .. 3 ) {
+      ITEMPERIOD: foreach my $i ( 1 .. 3 ) {
 
             $verbose and warn "branch '$branchcode', pass $i\n";
             my $mindays = $overdue_rules->{"delay$i"};    # the notice will be sent after mindays days (grace period)
@@ -556,7 +554,7 @@ END_SQL
 
             if ( !$overdue_rules->{"letter$i"} ) {
                 $verbose and warn "No letter$i code for branch '$branchcode'";
-                next PERIOD;
+                next ITEMPERIOD;
             }
 
             # $letter->{'content'} is the text of the mail that is sent.
@@ -597,18 +595,18 @@ END_SQL
 
             while( my ( $itemcount, $borrowernumber, $firstname, $lastname, $address1, $address2, $city, $postcode, $email ) = $sth->fetchrow ) {
                 $verbose and warn "borrower $firstname, $lastname ($borrowernumber) has $itemcount items triggering level $i.";
-    
+
                 my $letter = C4::Letters::getletter( 'circulation', $overdue_rules->{"letter$i"} );
                 unless ($letter) {
                     $verbose and warn "Message '$overdue_rules->{letter$i}' content not found";
-    
-                    # might as well skip while PERIOD, no other borrowers are going to work.
+
+                    # might as well skip while ITEMPERIOD, no other borrowers are going to work.
                     # FIXME : Does this mean a letter must be defined in order to trigger a debar ?
-                    next PERIOD;
+                    next ITEMPERIOD;
                 }
-    
+
                 if ( $overdue_rules->{"debarred$i"} ) {
-    
+
                     #action taken is debarring
                     C4::Members::DebarMember($borrowernumber);
                     $verbose and warn "debarring $borrowernumber $firstname $lastname\n";
@@ -622,7 +620,7 @@ END_SQL
                     $itemcount++;
                 }
                 $sth2->finish;
-    
+
                 $letter = parse_letter(
                     {   letter         => $letter,
                         borrowernumber => $borrowernumber,
@@ -633,16 +631,16 @@ END_SQL
                         }
                     }
                 );
-    
+
                 my @misses = grep { /./ } map { /^([^>]*)[>]+/; ( $1 || '' ); } split /\</, $letter->{'content'};
                 if (@misses) {
                     $verbose and warn "The following terms were not matched and replaced: \n\t" . join "\n\t", @misses;
                 }
                 $letter->{'content'} =~ s/\<[^<>]*?\>//g;    # Now that we've warned about them, remove them.
                 $letter->{'content'} =~ s/\<[^<>]*?\>//g;    # 2nd pass for the double nesting.
-    
+
                 if ($nomail) {
-    
+
                     push @output_chunks,
                       prepare_letter_for_printing(
                         {   letter         => $letter,
@@ -656,7 +654,7 @@ END_SQL
                             email          => $email,
                             itemcount      => $itemcount,
                             titles         => $titles,
-                            outputformat   => defined $csvfilename ? 'csv' : '',
+                            outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                         }
                       );
                 } else {
@@ -669,7 +667,7 @@ END_SQL
                             }
                         );
                     } else {
-    
+
                         # If we don't have an email address for this patron, send it to the admin to deal with.
                         push @output_chunks,
                           prepare_letter_for_printing(
@@ -684,7 +682,7 @@ END_SQL
                                 email          => $email,
                                 itemcount      => $itemcount,
                                 titles         => $titles,
-                                outputformat   => defined $csvfilename ? 'csv' : '',
+                                outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                             }
                           );
                     }
@@ -698,10 +696,14 @@ END_SQL
         if ($nomail) {
             if ( defined $csvfilename ) {
                 print $csv_fh @output_chunks;
+            } elsif ( defined $htmlfilename )  {
+                print $html_fh @output_chunks;
             } else {
                 local $, = "\f";    # pagebreak
                 print @output_chunks;
             }
+        } elsif ( defined $htmlfilename ) {
+            print $html_fh @output_chunks;
         } else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
