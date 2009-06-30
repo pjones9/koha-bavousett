@@ -151,7 +151,7 @@ foreach my $startrange (sort keys %$lost) {
         if ($lostvalue == 2 && $longoverdue_validrange) {
           $date1 =  bounds($longoverdue_startrange);
           $lostvalue = 1;
-          $startrange = $$longoverdue_startrange;
+          $startrange = $longoverdue_startrange;
           $verbose and
             printf "\nRange %s\nDue %3s - %3s days ago (%s to %s), lost => %s\n", ++$i,
             $startrange, $endrange, $date2, $date1, $lostvalue;
