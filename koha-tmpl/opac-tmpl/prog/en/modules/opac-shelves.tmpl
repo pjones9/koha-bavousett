@@ -77,10 +77,22 @@ $(function() {
     $("#listcontents").tablesorter({
         widgets : ['zebra'],
         <!-- TMPL_IF NAME="manageshelf" -->
+          <!-- TMPL_IF NAME="authorsort" -->
+          sortList: [[2,0]],
+          <!-- TMPL_ELSIF NAME="copyrightsort" -->
+          sortList: [[3,1]],
+          <!-- TMPL_ELSE -->
           sortList: [[1,0]],
+          <!-- /TMPL_IF -->
           headers: { 0: { sorter: false },1:{sorter: 'articles'}
         <!-- TMPL_ELSE -->
+          <!-- TMPL_IF NAME="authorsort" -->
+          sortList: [[1,0]],
+          <!-- TMPL_ELSIF NAME="copyrightsort" -->
+          sortList: [[2,1]],
+          <!-- TMPL_ELSE -->
           sortList: [[0,0]],
+          <!-- /TMPL_IF -->
           headers: { 0:{sorter:'articles'}
         <!-- /TMPL_IF -->
         }
@@ -210,11 +222,11 @@ $(document).ready(function(){
                   </tr></thead>
                   <tbody>
                   <!-- TMPL_LOOP NAME="itemsloop" -->
-                    <!-- TMPL_IF NAME="toggle" -->
+                    <!-- TMPL_UNLESS NAME="__odd__" -->
                       <tr class="highlight">
                     <!-- TMPL_ELSE -->
                       <tr>
-                    <!-- /TMPL_IF -->
+                    <!-- /TMPL_UNLESS -->
                     <!-- TMPL_IF NAME="manageshelf" -->
                         <td><input type="checkbox" name="REM-<!-- TMPL_VAR NAME="biblionumber" -->"
                                    value="<!-- TMPL_VAR NAME="biblionumber">" /></td>
@@ -277,7 +289,7 @@ $(document).ready(function(){
                       <li><label for="shelfname">List Name: </label><input type="text" id="shelfname" name="shelfname" size="60" value="<!-- TMPL_VAR NAME="shelfname" ESCAPE="html" -->" /></li>
                       <li>
                         <label for="sortfield" >Sort this list by: </label>
-                        <select name="sortfield">
+                        <select name="sortfield" id="sortfield">
                           <!-- TMPL_IF NAME="sort_title" --><option value="title" selected="selected">Title</option><!-- TMPL_ELSE --><option value="title">Title</option><!-- /TMPL_IF -->
                           <!-- TMPL_IF NAME="sort_author" --><option value="author" selected="selected">Author</option><!-- TMPL_ELSE --><option value="author">Author</option><!-- /TMPL_IF -->
                           <!-- TMPL_IF NAME="sort_copyrightdate" --><option value="copyrightdate" selected="selected">Copyrightdate</option><!-- TMPL_ELSE --><option value="copyrightdate">Copyrightdate</option><!-- /TMPL_IF -->
@@ -333,12 +345,12 @@ $(document).ready(function(){
                           <th>&nbsp;</th>
                         </tr>
                         <!-- TMPL_LOOP NAME="shelveslooppriv" -->
-                          <!-- TMPL_IF NAME="toggle" -->
+                          <!-- TMPL_UNLESS NAME="__odd__" -->
                             <tr class="highlight">
                           <!--TMPL_ELSE-->
                             <tr>
-                          <!-- /TMPL_IF -->
-                              <td><a href="opac-shelves.pl?display=privateshelves&viewshelf=<!-- TMPL_VAR NAME="shelf" -->"><!-- TMPL_VAR NAME="shelfname" ESCAPE="html"  --></a></td>
+                          <!-- /TMPL_UNLESS -->
+                              <td><a href="opac-shelves.pl?display=privateshelves&amp;viewshelf=<!-- TMPL_VAR NAME="shelf" -->&amp;sortfield=<!-- TMPL_VAR NAME="sortfield" -->"><!-- TMPL_VAR NAME="shelfname" ESCAPE="html"  --></a></td>
                               <td><!-- TMPL_VAR NAME="count" --> item(s)</td>
                               <td><!-- TMPL_VAR NAME="sortfield" --></td>
                               <td>
@@ -346,7 +358,7 @@ $(document).ready(function(){
                                 <!-- TMPL_IF NAME="viewcategory2" -->Public<!-- /TMPL_IF -->
                                 <!-- TMPL_IF NAME="viewcategory3" -->Open<!-- /TMPL_IF -->
                               </td>
-                              <td id="toolbar">
+                              <td>
                             <!-- TMPL_IF NAME="mine" -->
                                 <form action="opac-shelves.pl" method="get">
                                   <input type="hidden" name="shelfnumber" value="<!-- TMPL_VAR NAME="shelf" -->" />
@@ -386,29 +398,35 @@ $(document).ready(function(){
                   <!-- TMPL_ELSE -->
                     <div id="publicshelves" class="tab-container" style="display:none;">
                   <!-- /TMPL_IF -->
-                  
+                  <!-- TMPL_IF NAME="loggedinusername" -->
+                  <a class="newshelf" href="/cgi-bin/koha/opac-shelves.pl?shelves=1">New List</a>
+                  <!-- TMPL_ELSE -->
+                  <div><a href="/cgi-bin/koha/opac-user.pl">Log in</a> to create new Lists.</div>
+                  <!-- /TMPL_IF -->
                   <!-- TMPL_IF NAME="shelvesloop" -->
                     <!-- TMPL_VAR name='pagination_bar'-->
                       <table>
                         <tr>
                           <th>List Name</th>
                           <th>Contents</th>
+                          <th>Sort by</th>
                           <th>Type</th><th>&nbsp;</th>
                         </tr>
                     <!-- TMPL_LOOP NAME="shelvesloop" -->
-                      <!-- TMPL_IF NAME="toggle" -->
+                      <!-- TMPL_UNLESS NAME="__odd__" -->
                         <tr class="highlight">
                       <!--TMPL_ELSE-->
                         <tr>
-                      <!-- /TMPL_IF -->
-                          <td><a href="opac-shelves.pl?viewshelf=<!-- TMPL_VAR NAME="shelf" -->"><!-- TMPL_VAR NAME="shelfname" ESCAPE="html"  --></a></td>
+                      <!-- /TMPL_UNLESS -->
+                          <td><a href="opac-shelves.pl?viewshelf=<!-- TMPL_VAR NAME="shelf" -->&amp;sortfield=<!-- TMPL_VAR NAME="sortfield" -->"><!-- TMPL_VAR NAME="shelfname" ESCAPE="html"  --></a></td>
                           <td><!-- TMPL_VAR NAME="count" --> item(s)</td>
+                          <td><!-- TMPL_VAR NAME="sortfield" --></td>
                           <td>
                             <!-- TMPL_IF NAME="viewcategory1" -->Private<!-- /TMPL_IF -->
                             <!-- TMPL_IF NAME="viewcategory2" -->Public<!-- /TMPL_IF -->
                             <!-- TMPL_IF NAME="viewcategory3" -->Open<!-- /TMPL_IF -->
 	                      </td>
-                          <td id="toolbar">
+                          <td>
                             <!-- TMPL_IF NAME="mine" -->
                               <form action="opac-shelves.pl" method="get">
                                 <input type="hidden" name="shelfnumber" value="<!-- TMPL_VAR NAME="shelf" -->" />
@@ -459,7 +477,7 @@ $(document).ready(function(){
                       </li>
                       <li>
                         <label for="sortfield" >Sort this list by: </label>
-                        <select name="sortfield">
+                        <select name="sortfield" id="sortfield">
                           <!-- TMPL_IF NAME="sort_title" --><option value="title" selected="selected">Title</option><!-- TMPL_ELSE --><option value="title">Title</option><!-- /TMPL_IF -->
                           <!-- TMPL_IF NAME="sort_author" --><option value="author" selected="selected">Author</option><!-- TMPL_ELSE --><option value="author">Author</option><!-- /TMPL_IF -->
                           <!-- TMPL_IF NAME="sort_copyrightdate" --><option value="copyrightdate" selected="selected">Copyrightdate</option><!-- TMPL_ELSE --><option value="copyrightdate">Copyrightdate</option><!-- /TMPL_IF -->
