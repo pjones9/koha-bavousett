@@ -45,6 +45,7 @@ use C4::Calendar qw();  # don't need any exports from Calendar
 use C4::Biblio;
 use C4::Debug;  # supplying $debug and $cgi_debug
 use Getopt::Long;
+use C4::Stats;
 
 my $help = 0;
 my $verbose = 0;
