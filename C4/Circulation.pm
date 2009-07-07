@@ -1532,7 +1532,7 @@ sub AddReturn {
           my ($amt, $type, $daycounttotal, $daycount) =
               CalcFine($iteminformation, $borrower->{'categorycode'},$branch, undef, undef,$datedue, $today);
               (defined $type) or $type= '';
-              UpdateFine($iteminformation{'itemnumber'},$iteminformation{'borrowernumber'},$amount, $type, $due_str) if ($amount > 0); 
+              UpdateFine($iteminformation->{'itemnumber'},$iteminformation->{'borrowernumber'},$amt, $type, $due_str) if ($amount > 0); 
         }
     
         # find reserves.....
