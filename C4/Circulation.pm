@@ -32,6 +32,7 @@ use C4::Calendar;
 use C4::Accounts;
 use C4::ItemCirculationAlertPreference;
 use C4::Message;
+use C4::Overdues;
 use Date::Calc qw(
   Today
   Today_and_Now
