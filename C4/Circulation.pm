@@ -1523,6 +1523,17 @@ sub AddReturn {
         # fix up the overdues in accounts...
         FixOverduesOnReturn( $borrower->{'borrowernumber'},
             $iteminformation->{'itemnumber'}, $exemptfine, $dropbox );
+
+        # For claims-returned items, update the fine to be as-if they returned it for normal overdue
+        if ($iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
+          my $datedue = C4::Dates->new($iteminformation->{'date_due'},'iso'); 
+          my $due_str = $datedue->output();
+          my $today = C4::Dates->new();
+          my ($amt, $type, $daycounttotal, $daycount) =
+              CalcFine($iteminformation, $borrower->{'categorycode'},$branch, undef, undef,$datedue, $today);
+              (defined $type) or $type= '';
+              UpdateFine($iteminformation{'itemnumber'},$iteminformation{'borrowernumber'},$amount, $type, $due_str) if ($amount > 0); 
+        }
     
         # find reserves.....
         # if we don't have a reserve with the status W, we launch the Checkreserves routine
