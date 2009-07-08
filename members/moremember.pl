@@ -227,6 +227,14 @@ for ( my $i = 0 ; $i < $count ; $i++ ) {
     my %row = %{ $issue->[$i] };
     $totalprice += $issue->[$i]{'replacementprice'};
     $row{'replacementprice'} = $issue->[$i]{'replacementprice'};
+	my $loststatus = $issue->[$i]{'itemlost'};
+	if ($loststatus == 5)
+	{
+		$row{'lostitem'} = "Claims Returned";
+	} elsif ($loststatus == 2)
+	{
+		$row{'lostitem'} = "Long Overdue (Lost)";
+	}
     if ( $datedue lt $today ) {
         $overdues_exist = 1;
         $row{'red'} = 1;
