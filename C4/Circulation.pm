@@ -1531,9 +1531,9 @@ sub AddReturn {
           my $due_str = $datedue->output();
           my $today = C4::Dates->new();
           my ($amt, $type, $daycounttotal, $daycount) =
-              CalcFine($iteminformation, $borrower->{'categorycode'},$branch, undef, undef,$datedue, $today);
+              C4::Overdues::CalcFine($iteminformation, $borrower->{'categorycode'},$branch, undef, undef,$datedue, $today);
               (defined $type) or $type= '';
-              UpdateFine($iteminformation->{'itemnumber'},$iteminformation->{'borrowernumber'},$amt, $type, $due_str) if ($amt > 0); 
+              C4::Overdues::UpdateFine($iteminformation->{'itemnumber'},$iteminformation->{'borrowernumber'},$amt, $type, $due_str) if ($amt > 0); 
         }
     
         # find reserves.....
