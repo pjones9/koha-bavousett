@@ -380,7 +380,7 @@ $template->param(
     amountpastdue    => sprintf( "%.2f", $amountpastdue),
     issueloop        => \@issuedata,
     overdues_exist   => $overdues_exist,
-    unvalidlibrarian => $unvalidlibrarian,
+#    unvalidlibrarian => $unvalidlibrarian,
     error            => $error,
     $error           => 1,
     StaffMember	     => ($category_type eq 'S'),
