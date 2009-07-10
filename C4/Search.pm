@@ -1346,7 +1346,7 @@ s/\[(.?.?.?.?)$tagsubf(.*?)]/$1$subfieldvalue$2\[$1$tagsubf$2]/g;
         my $itembinding_count     = 0;
         my $itemdamaged_count     = 0;
         my $item_in_transit_count = 0;
-        my $item_reserve_count = 0;
+        my $item_reserve_count    = 0;
         my $can_place_holds       = 0;
         my $items_count           = scalar(@fields);
         my $maxitems =
@@ -1425,7 +1425,8 @@ s/\[(.?.?.?.?)$tagsubf(.*?)]/$1$subfieldvalue$2\[$1$tagsubf$2]/g;
                     ($transfertwhen, $transfertfrom, $transfertto) = C4::Circulation::GetTransfers($item->{itemnumber});
                 }
 
-                my ($restype,$reserves) = C4::Reserves::CheckReserves($item->{itemnumber});
+                my ($restype,$reserves,$count) = C4::Reserves::CheckReserves($item->{itemnumber});
+                $restype = 0 if (($restype eq "Reserved") && ($item_reserve_count == $count));
                 # item is withdrawn, lost or damaged
                 if (   $item->{wthdrawn}
                     || $item->{itemlost}
