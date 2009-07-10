@@ -411,7 +411,7 @@ sub manualinvoice {
             $amountleft, $notifyid );
     }
 
-    UpdateStats( my $branch = '', my $stattype = 'maninvoice', $amount, my $other = $type, $itemnum, my $itemtype, $borrowernumber, $accountno);
+    C4::Stats::UpdateStats( my $branch = '', my $stattype = 'maninvoice', $amount, my $other = $type, $itemnum, my $itemtype, $borrowernumber, $accountno);
     return 0;
 }
 
