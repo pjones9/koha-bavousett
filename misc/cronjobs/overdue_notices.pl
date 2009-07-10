@@ -312,7 +312,11 @@ if ( defined $htmlfilename ) {
   print $html_fh "<html>\n";
   print $html_fh "<head>\n";
   print $html_fh "<style type='text/css'>\n";
-  print $html_fh "pre {page-break-after: always}\n";
+  print $html_fh "pre {page-break-after: always;}\n";
+  print $html_fh "pre {white-space: pre-wrap;}\n";
+  print $html_fh "pre {white-space: -moz-pre-wrap;}\n";
+  print $html_fh "pre {white-space: -o-pre-wrap;}\n";
+  print $html_fh "pre {word-wrap: break-work;}\n";
   print $html_fh "</style>\n";
   print $html_fh "</head>\n";
   print $html_fh "<body>\n";
