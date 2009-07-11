@@ -251,3 +251,4 @@ INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanatio
 INSERT INTO `systempreferences` ( `variable` , `value` , `options` , `explanation` , `type` ) VALUES ( 'DisplayOthernames', '1', '', 'Ability to turn the othernames field on/off in patron screen', 'YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES('EnableOwedNotification',0,'If ON, allows a notification to be sent on total amount owed.  OwedNotificationValue syspref will need to be set to the desired amount.',NULL,'YesNo');
 INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES('OwedNotificationValue',25.00,'Amount owed to receive a notification.  To work, EnableOwedNotification syspref will need to be turn ON.',NULL,'free');
+INSERT INTO systempreferences (variable,value,explanation,options,type)VALUES('BCCAllNotices','','If set, sends a blind carbon of every email sent to the specified address','','free');
