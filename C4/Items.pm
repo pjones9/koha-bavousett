@@ -62,6 +62,8 @@ BEGIN {
         GetItemsInfo
         get_itemnumbers_of
         GetItemnumberFromBarcode
+        
+        CartToShelf
     );
 }
 
@@ -152,6 +154,28 @@ sub GetItem {
 	}
     return $data;
 }    # sub GetItem
+
+sub CartToShelf {
+  my ( $itemnumber, $barcode ) = @_;
+  
+  my ( $field, $value );
+  
+  if ( $itemnumber ) {
+    $field = 'itemnumber';
+    $value = $itemnumber;
+  } elsif ( $barcode ) { 
+    $field = 'barcode'; 
+    $value = $barcode;
+  } else {
+    die();
+  }
+  
+  my $sql = "UPDATE items SET items.location = items.permanent_location WHERE $field = ?";
+  
+  my $dbh = C4::Context->dbh;
+  my $sth = $dbh->prepare( $sql );
+  $sth->execute( $value );
+}
 
 =head2 AddItemFromMarc
 
