@@ -10,34 +10,75 @@
 </head>
 <body>
 
-<div id="receipt">
+<div id="main">
+<B>Checkout Receipt</b><br>
+<b><!-- TMPL_VAR name="LibraryName" --></b>
 
-<h3><!-- TMPL_VAR name="LibraryName" --></h3>
-<!-- TMPL_IF NAME="branchname" --><!-- TMPL_VAR NAME="branchname" --><br /><!-- /TMPL_IF -->
-Checked out to <a href="/cgi-bin/koha/circ/circulation.pl?findborrower=<!-- TMPL_VAR NAME="cardnumber">"><!-- TMPL_VAR NAME="cardnumber" --></a><br />
+<SCRIPT LANGUAGE="JavaScript">
+Stamp = new Date();
+year = Stamp.getYear();
+if (year < 2000) year = 1900 + year;
+document.write('<B>' + (Stamp.getMonth() + 1) +"/"+Stamp.getDate()+ "/"+ year + '</B>&nbsp;&nbsp;');
+var Hours;
+var Mins;
+var Time;
+Hours = Stamp.getHours();
+if (Hours >= 12) {
+Time = " P.M.";
+}
+else {
+Time = " A.M.";
+}
+if (Hours > 12) {
+Hours -= 12;
+}
+if (Hours == 0) {
+Hours = 12;
+}
+Mins = Stamp.getMinutes();
+if (Mins < 10) {
+Mins = "0" + Mins;
+}	
+document.write('<B>' + Hours + ":" + Mins + Time + '</B>');
+</SCRIPT>
+<br/><br/>
+Visit www.ebpl.org for Library info,<br/>
+Koha online catalog, & more!<br/>
+<br/>
+All Renewals now by telephone,<br/>
+Koha, or in-person.<br/>
+For Circulation items call 732-390-6950<br/>
+For Information Services call 732-390-6767<br/>
+----------------------------------------------------------<br/>
+        BORROWER ID: <a href="/cgi-bin/koha/circ/circulation.pl?findborrower=<!-- TMPL_VAR NAME="cardnumber">"><!-- TMPL_VAR NAME="borrowernumber" --></a><br />
 
 <!-- TMPL_VAR NAME="todaysdate" --><br />
 
-<h4>Checked Out</h4>
-<!-- TMPL_loop name="issueloop" -->
-<!-- TMPL_IF name="red" --><!-- TMPL_ELSE -->
-<p><a href="/cgi-bin/koha/catalogue/detail.pl?item=<!-- TMPL_VAR NAME="itemnumber" -->&amp;biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->&amp;bi=<!-- TMPL_VAR NAME="biblioitemnumber" -->"><!-- TMPL_VAR NAME="title" escape="html" --></a><br />
-Barcode: <!-- TMPL_VAR NAME="barcode" --><br />
-Date due: <!-- TMPL_VAR NAME="date_due" --><br /></p>
+<P><B>Checked Out:</b></p>
+<table>
+    <!-- TMPL_loop name="issueloop" -->
+    <!-- TMPL_IF name="red" --><!-- TMPL_ELSE -->
+	<B>Tltle: <!-- TMPL_VAR NAME="title" --></b> <br/>
+	Call No: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
+	Barcode: <!-- TMPL_VAR NAME="barcode" --><br/>
+        Due Date: <!-- TMPL_VAR NAME="date_due" --><br/>
     <!-- /TMPL_IF -->
     <!-- /TMPL_LOOP -->
-
+</table>
 
 <!-- TMPL_IF NAME="overdues_exist" -->
-<h4>Overdues</h4>
+<P><B>Overdues:</b></p>
+<table>
     <!-- TMPL_LOOP NAME="issueloop" -->
     <!-- TMPL_IF NAME="red" -->
-<p><a href="/cgi-bin/koha/catalogue/detail.pl?item=<!-- TMPL_VAR NAME="itemnumber" -->&amp;biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->&amp;bi=<!-- TMPL_VAR NAME="biblioitemnumber" -->"><!-- TMPL_VAR NAME="title" escape="html" --></a><br />
-Barcode: <!-- TMPL_VAR NAME="barcode" --><br />
-Date due: <!-- TMPL_VAR NAME="date_due" --><br /></p>
+	<B>Title: <!-- TMPL_VAR NAME="title" --></b> <br/>
+	Call No: <!-- TMPL_VAR NAME="itemcallnumber" --> <br/>
+    	Barcode: <!-- TMPL_VAR NAME="barcode" --> <br/>
+	Due Date: <!-- TMPL_VAR NAME="date_due" --><br/>
     <!-- /TMPL_IF -->
     <!-- /TMPL_LOOP -->
-
+</table>
 <!-- /TMPL_IF -->
 
 <!-- TMPL_INCLUDE NAME="intranet-bottom.inc" -->
+
