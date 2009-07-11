@@ -52,6 +52,7 @@ overdue_notices.pl [ -n ] [ -library <branchcode> ] [ -max <number of days> ] [ 
    -max          <days>           maximum days overdue to deal with
    -library      <branchname>     only deal with overdues from this library
    -csv          <filename>       populate CSV file
+   -html         <filename>       Output html to file
    -itemscontent <list of fields> item information in templates
 
 =head1 OPTIONS
@@ -230,9 +231,10 @@ my $nomail  = 0;
 my $MAX     = 90;
 my $mybranch;
 my $csvfilename;
+my $htmlfilename;
 my $triggered = 0;
 my $listall = 0;
-my $itemscontent = join( ',', qw( issuedate title barcode author ) );
+my $itemscontent = join( ',', qw( issuedate date_due title barcode author ) );
 
 GetOptions(
     'help|?'         => \$help,
@@ -242,6 +244,7 @@ GetOptions(
     'max=s'          => \$MAX,
     'library=s'      => \$mybranch,
     'csv:s'          => \$csvfilename,    # this optional argument gets '' if not supplied.
+    'html:s'          => \$htmlfilename,    # this optional argument gets '' if not supplied.
     'itemscontent=s' => \$itemscontent,
     'list-all'      => \$listall,
     't|triggered'             => \$triggered,
@@ -295,6 +298,23 @@ if ( defined $csvfilename ) {
     } else {
         $verbose and warn 'combine failed on argument: ' . $csv->error_input;
     }
+}
+
+our $html_fh;
+if ( defined $htmlfilename ) {
+  if ( $htmlfilename eq '' ) {
+    $html_fh = *STDOUT;
+  } else {
+    open $html_fh, ">", $htmlfilename or die "unable to open $htmlfilename: $!";
+  }
+
+  print $html_fh "<html>\n";
+  print $html_fh "<head>\n";
+  print $html_fh "<style type='text/css'>\n";
+  print $html_fh "pre {page-break-after: always}\n";
+  print $html_fh "</style>\n";
+  print $html_fh "</head>\n";
+  print $html_fh "<body>\n";
 }
 
 foreach my $branchcode (@branches) {
@@ -390,6 +410,8 @@ END_SQL
                 $sth2->execute( ($listall) ? ( $borrowernumber , 1 , $MAX ) : ( $borrowernumber, $mindays, $maxdays ) );
                 my $itemcount = 0;
                 my $titles = "";
+                $titles .= join("\t", @item_content_fields) . "\n";
+                $itemcount++;
                 while ( my $item_info = $sth2->fetchrow_hashref() ) {
                     my @item_info = map { $_ =~ /^date|date$/ ? format_date( $item_info->{$_} ) : $item_info->{$_} || '' } @item_content_fields;
                     $titles .= join("\t", @item_info) . "\n";
@@ -430,7 +452,7 @@ END_SQL
                             email          => $email,
                             itemcount      => $itemcount,
                             titles         => $titles,
-                            outputformat   => defined $csvfilename ? 'csv' : '',
+                            outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                         }
                       );
                 } else {
@@ -458,7 +480,7 @@ END_SQL
                                 email          => $email,
                                 itemcount      => $itemcount,
                                 titles         => $titles,
-                                outputformat   => defined $csvfilename ? 'csv' : '',
+                                outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
                             }
                           );
                     }
@@ -472,10 +494,206 @@ END_SQL
         if ($nomail) {
             if ( defined $csvfilename ) {
                 print $csv_fh @output_chunks;
+            } elsif ( defined $htmlfilename) {
+                print $html_fh @output_chunks;
             } else {
                 local $, = "\f";    # pagebreak
                 print @output_chunks;
             }
+        } elsif ( defined $htmlfilename ) {
+            printf $html_fh @output_chunks;
+        } else {
+            my $attachment = {
+                filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
+                type => 'text/plain',
+                content => join( "\n", @output_chunks )
+            };
+
+            my $letter = {
+                title   => 'Overdue Notices',
+                content => 'These messages were not sent directly to the patrons.',
+            };
+            C4::Letters::EnqueueLetter(
+                {   letter                 => $letter,
+                    borrowernumber         => undef,
+                    message_transport_type => 'email',
+                    attachments            => [$attachment],
+                    to_address             => $admin_email_address,
+                }
+            );
+        }
+    }
+
+# Examine overdueitemrules table
+
+    $rqoverduerules = $dbh->prepare("SELECT * FROM overdueitemrules WHERE delay1 IS NOT NULL AND branchcode = ? ");
+    $rqoverduerules->execute($branchcode);
+    # my $outfile = 'overdues_' . ( $mybranch || $branchcode || 'default' );
+    while ( my $overdue_rules = $rqoverduerules->fetchrow_hashref ) {
+      ITEMPERIOD: foreach my $i ( 1 .. 3 ) {
+
+            $verbose and warn "branch '$branchcode', pass $i\n";
+            my $mindays = $overdue_rules->{"delay$i"};    # the notice will be sent after mindays days (grace period)
+            my $maxdays = (
+                  $overdue_rules->{ "delay" . ( $i + 1 ) }
+                ? $overdue_rules->{ "delay" . ( $i + 1 ) }
+                : ($MAX)
+            );                                            # issues being more than maxdays late are managed somewhere else. (borrower probably suspended)
+
+            if ( !$overdue_rules->{"letter$i"} ) {
+                $verbose and warn "No letter$i code for branch '$branchcode'";
+                next ITEMPERIOD;
+            }
+
+            # $letter->{'content'} is the text of the mail that is sent.
+            # this text contains fields that are replaced by their value. Those fields must be written between brackets
+            # The following fields are available :
+	    # itemcount is interpreted here as the number of items in the overdue range defined by the current notice or all overdues < max if(-list-all).
+            # <date> <itemcount> <firstname> <lastname> <address1> <address2> <address3> <city> <postcode>
+
+            my $itemtype_sql = <<'END_SQL';
+SELECT COUNT(*), issues.borrowernumber, firstname, surname, address, address2, city, zipcode, email, MIN(date_due) as longest_issue
+FROM   issues,borrowers,items,itemtypes
+WHERE  issues.borrowernumber=borrowers.borrowernumber
+AND    issues.itemnumber=items.itemnumber
+AND    items.itype=itemtypes.itemtype
+END_SQL
+            my @itemtype_parameters;
+            if ($branchcode) {
+                $itemtype_sql .= ' AND issues.branchcode=? ';
+                push @itemtype_parameters, $branchcode;
+            }
+            if ( $overdue_rules->{itemtype} ) {
+                $itemtype_sql .= ' AND items.itype=? ';
+                push @itemtype_parameters, $overdue_rules->{itemtype};
+            }
+            $itemtype_sql .= '  GROUP BY issues.borrowernumber ';
+            if($triggered) {
+                $itemtype_sql .= ' HAVING TO_DAYS(NOW())-TO_DAYS(longest_issue) = ?';
+                push @itemtype_parameters, $mindays;
+            } else {
+                $itemtype_sql .= ' HAVING TO_DAYS(NOW())-TO_DAYS(longest_issue) BETWEEN ? and ? ' ;
+                push @itemtype_parameters, $mindays, $maxdays;
+            }
+
+            # $sth gets borrower info if at least one overdue item has triggered the overdue action.
+	    my $sth = $dbh->prepare($itemtype_sql);
+            $sth->execute(@itemtype_parameters);
+            $verbose and warn $itemtype_sql . "\n $branchcode | " . $overdue_rules->{'categorycode'} . "\n ($mindays, $maxdays)\nreturns " . $sth->rows . " rows";
+
+            while( my ( $itemcount, $borrowernumber, $firstname, $lastname, $address1, $address2, $city, $postcode, $email ) = $sth->fetchrow ) {
+                $verbose and warn "borrower $firstname, $lastname ($borrowernumber) has $itemcount items triggering level $i.";
+
+                my $letter = C4::Letters::getletter( 'circulation', $overdue_rules->{"letter$i"} );
+                unless ($letter) {
+                    $verbose and warn "Message '$overdue_rules->{letter$i}' content not found";
+
+                    # might as well skip while ITEMPERIOD, no other borrowers are going to work.
+                    # FIXME : Does this mean a letter must be defined in order to trigger a debar ?
+                    next ITEMPERIOD;
+                }
+
+                if ( $overdue_rules->{"debarred$i"} ) {
+
+                    #action taken is debarring
+                    C4::Members::DebarMember($borrowernumber);
+                    $verbose and warn "debarring $borrowernumber $firstname $lastname\n";
+                }
+                $sth2->execute( ($listall) ? ( $borrowernumber , 1 , $MAX ) : ( $borrowernumber, $mindays, $maxdays ) );
+                my $itemcount = 0;
+                my $titles = "";
+                $titles .= join("\t", @item_content_fields) . "\n";
+                $itemcount++;
+                while ( my $item_info = $sth2->fetchrow_hashref() ) {
+                    my @item_info = map { $_ =~ /^date|date$/ ? format_date( $item_info->{$_} ) : $item_info->{$_} || '' } @item_content_fields;
+                    $titles .= join("\t", @item_info) . "\n";
+                    $itemcount++;
+                }
+                $sth2->finish;
+
+                $letter = parse_letter(
+                    {   letter         => $letter,
+                        borrowernumber => $borrowernumber,
+                        branchcode     => $branchcode,
+                        substitute     => {
+                            bib             => $branch_details->{'branchname'},
+                            'items.content' => $titles
+                        }
+                    }
+                );
+
+                my @misses = grep { /./ } map { /^([^>]*)[>]+/; ( $1 || '' ); } split /\</, $letter->{'content'};
+                if (@misses) {
+                    $verbose and warn "The following terms were not matched and replaced: \n\t" . join "\n\t", @misses;
+                }
+                $letter->{'content'} =~ s/\<[^<>]*?\>//g;    # Now that we've warned about them, remove them.
+                $letter->{'content'} =~ s/\<[^<>]*?\>//g;    # 2nd pass for the double nesting.
+
+                if ($nomail) {
+
+                    push @output_chunks,
+                      prepare_letter_for_printing(
+                        {   letter         => $letter,
+                            borrowernumber => $borrowernumber,
+                            firstname      => $firstname,
+                            lastname       => $lastname,
+                            address1       => $address1,
+                            address2       => $address2,
+                            city           => $city,
+                            postcode       => $postcode,
+                            email          => $email,
+                            itemcount      => $itemcount,
+                            titles         => $titles,
+                            outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
+                        }
+                      );
+                } else {
+                    if ($email) {
+                        C4::Letters::EnqueueLetter(
+                            {   letter                 => $letter,
+                                borrowernumber         => $borrowernumber,
+                                message_transport_type => 'email',
+                                from_address           => $admin_email_address,
+                            }
+                        );
+                    } else {
+
+                        # If we don't have an email address for this patron, send it to the admin to deal with.
+                        push @output_chunks,
+                          prepare_letter_for_printing(
+                            {   letter         => $letter,
+                                borrowernumber => $borrowernumber,
+                                firstname      => $firstname,
+                                lastname       => $lastname,
+                                address1       => $address1,
+                                address2       => $address2,
+                                city           => $city,
+                                postcode       => $postcode,
+                                email          => $email,
+                                itemcount      => $itemcount,
+                                titles         => $titles,
+                                outputformat   => defined $csvfilename ? 'csv' : defined $htmlfilename ? 'html' : '',
+                            }
+                          );
+                    }
+                }
+            }
+            $sth->finish;
+        }
+    }
+
+    if (@output_chunks) {
+        if ($nomail) {
+            if ( defined $csvfilename ) {
+                print $csv_fh @output_chunks;
+            } elsif ( defined $htmlfilename )  {
+                print $html_fh @output_chunks;
+            } else {
+                local $, = "\f";    # pagebreak
+                print @output_chunks;
+            }
+        } elsif ( defined $htmlfilename ) {
+            print $html_fh @output_chunks;
         } else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
@@ -504,6 +722,12 @@ if ($csvfilename) {
     # note that we're not testing on $csv_fh to prevent closing
     # STDOUT.
     close $csv_fh;
+}
+
+if ( defined $htmlfilename ) {
+  print $html_fh "</body>\n";
+  print $html_fh "</html>\n";
+  close $html_fh;
 }
 
 =head1 INTERNAL METHODS
