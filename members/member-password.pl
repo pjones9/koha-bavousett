@@ -49,9 +49,13 @@ $errormsg = 'SHORTPASSWORD' if( $newpassword && $minpw && (length($newpassword) 
 
 if ( $newpassword  && ! $errormsg ) {
     my $digest=md5_base64($input->param('newpassword'));
+    my $plaintext;
+    if ( C4::Context->preference('StorePasswordPlaintext') ) {
+    	$plaintext = $input->param('newpassword');
+    }
     my $uid = $input->param('newuserid');
     my $dbh=C4::Context->dbh;
-    if (changepassword($uid,$member,$digest)) {
+    if (changepassword($uid,$member,$digest,$plaintext)) {
 		$template->param(newpassword => $newpassword);
 		if ($destination eq 'circ') {
 		    print $input->redirect("/cgi-bin/koha/circ/circulation.pl?findborrower=$cardnumber");		
@@ -75,6 +79,11 @@ if ( $newpassword  && ! $errormsg ) {
     my $defaultnewpassword='';
     for (my $i=0; $i<$length; $i++) {
 	$defaultnewpassword.=substr($chars, int(rand(length($chars))),1);
+    }
+
+    if ( C4::Context->preference('StorePasswordPlaintext') && $bor->{'category_type'} ne 'S' ) {
+    	$defaultnewpassword = $bor->{'password_plaintext'};
+    	$template->param( 'PasswordPlaintext' => 1 );
     }
 	
     if ( $bor->{'category_type'} eq 'C') {
