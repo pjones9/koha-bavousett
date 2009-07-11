@@ -389,4 +389,6 @@ $template->param(
     samebranch     => $samebranch,
 );
 
+$template->param("showinitials" => C4::Context->preference('DisplayInitials'));
+
 output_html_with_http_headers $input, $cookie, $template->output;
