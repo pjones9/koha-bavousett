@@ -162,6 +162,7 @@ $tabsysprefs{BranchTransferLimitsType}       = "Circulation";
 $tabsysprefs{AllowNotForLoanOverride}        = "Circulation";
 $tabsysprefs{RenewalPeriodBase}              = "Circulation";
 $tabsysprefs{FilterBeforeOverdueReport}      = "Circulation";
+$tabsysprefs{OPACFineNoRenewals}              = "Circulation";
 
 # Staff Client
 $tabsysprefs{TemplateEncoding}        = "StaffClient";
