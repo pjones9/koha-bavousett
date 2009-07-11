@@ -1526,6 +1526,7 @@ CREATE TABLE `old_reserves` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `itemnumber` int(11) default NULL,
   `waitingdate` date default NULL,
+  `expirationdate` date default NULL,
   KEY `old_reserves_borrowernumber` (`borrowernumber`),
   KEY `old_reserves_biblionumber` (`biblionumber`),
   KEY `old_reserves_itemnumber` (`itemnumber`),
@@ -1719,6 +1720,7 @@ CREATE TABLE `reserves` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `itemnumber` int(11) default NULL,
   `waitingdate` date default NULL,
+  `expirationdate` date default NULL,
   KEY `borrowernumber` (`borrowernumber`),
   KEY `biblionumber` (`biblionumber`),
   KEY `itemnumber` (`itemnumber`),
@@ -2385,6 +2387,21 @@ CREATE TABLE `item_circulation_alert_preferences` (
   `notification` varchar(16) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `branchcode` (`branchcode`,`categorycode`,`item_type`, `notification`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `itemstatus`
+--
+
+DROP TABLE IF EXISTS `itemstatus`;
+CREATE TABLE `itemstatus` (
+  `statuscode_id` int(11) NOT NULL auto_increment,
+  `statuscode` varchar(10) NOT NULL default '',
+  `description` varchar(25) default NULL,
+  `holdsallowed` tinyint(1) NOT NULL default 0,
+  `holdsfilled` tinyint(1) NOT NULL default 0,
+  PRIMARY KEY  (`statuscode_id`),
+  UNIQUE KEY `statuscode` (`statuscode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

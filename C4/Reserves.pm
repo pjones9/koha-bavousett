@@ -1000,12 +1000,14 @@ sub ModReserveAffect {
     }
     else {
     # affect the reserve to Waiting as well.
+    my $holdperiod = C4::Context->preference('ReservesMaxPickUpDelay');
     $query = "
         UPDATE reserves
         SET     priority = 0,
                 found = 'W',
                 waitingdate=now(),
-                itemnumber = ?
+                itemnumber = ?,
+		expirationdate=curdate()+$holdperiod
         WHERE borrowernumber = ?
           AND biblionumber = ?
     ";
