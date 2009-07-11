@@ -123,7 +123,11 @@ my (@itemloop, %itemfields);
 my $norequests = 1;
 my $authvalcode_items_itemlost = GetAuthValCode('items.itemlost',$fw);
 my $authvalcode_items_damaged  = GetAuthValCode('items.damaged', $fw);
+my $itemcount=0;
+my $additemnumber;
 foreach my $item (@items) {
+    $additemnumber = $item->{'itemnumber'} if (!$itemcount);
+    $itemcount++;
 
     # can place holds defaults to yes
     $norequests = 0 unless ( ( $item->{'notforloan'} > 0 ) || ( $item->{'itemnotforloan'} > 0 ) );
@@ -216,6 +220,7 @@ $template->param(
     subscriptionsnumber => $subscriptionsnumber,
     subscriptiontitle   => $dat->{title},
 );
+$template->param(additemnumber => $additemnumber);
 
 # $debug and $template->param(debug_display => 1);
 
