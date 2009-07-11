@@ -58,6 +58,7 @@ BEGIN {
 	push @EXPORT, qw(
 		&FixOverduesOnReturn
 		&barcodedecode
+		GetRenewalDetails 
 	);
 
 	# subs to deal with issuing a book
@@ -2098,11 +2099,29 @@ from the book's item type.
 sub AddRenewal {
 	my $borrowernumber = shift or return undef;
 	my     $itemnumber = shift or return undef;
+
     my $item   = GetItem($itemnumber) or return undef;
     my $biblio = GetBiblioFromItemNumber($itemnumber) or return undef;
     my $branch  = (@_) ? shift : $item->{homebranch};	# opac-renew doesn't send branch
     my $datedue = shift;
     my $lastreneweddate = shift;
+    my $source = shift;
+
+    # If the due date wasn't specified, calculate it by adding the
+    # book's loan length to today's date.
+    unless ($datedue && $datedue->output('iso')) {
+
+        my $borrower = C4::Members::GetMemberDetails( $borrowernumber, 0 ) or return undef;
+        my $loanlength = GetLoanLength(
+            $borrower->{'categorycode'},
+             (C4::Context->preference('item-level_itypes')) ? $biblio->{'itype'} : $biblio->{'itemtype'} ,
+			$item->{homebranch}			# item's homebranch determines loanlength OR do we want the branch specified by the AddRenewal argument?
+        );
+		#FIXME -- use circControl?
+		$datedue =  CalcDateDue(C4::Dates->new(),$loanlength,$branch);	# this branch is the transactional branch.
+								# The question of whether to use item's homebranch calendar is open.
+    }
+
     # $lastreneweddate defaults to today.
     unless (defined $lastreneweddate) {
         $lastreneweddate = strftime( "%Y-%m-%d", localtime );
@@ -2173,7 +2192,7 @@ sub AddRenewal {
         $sth->finish;
     }
     # Log the renewal
-    UpdateStats( $branch, 'renew', $charge, '', $itemnumber, $item->{itype}, $borrowernumber);
+    UpdateStats( $branch, 'renew', $charge, $source, $itemnumber, $item->{itype}, $borrowernumber);
 	return $datedue;
 }
 
@@ -2344,6 +2363,35 @@ sub GetTransfersFromTo {
     }
     $sth->finish;
     return (@gettransfers);
+}
+
+=head2 GetRenewalDetails
+
+( $intranet_renewals, $opac_renewals ) = GetRenewalDetails( $itemnumber, $renewals_limit );
+
+Returns the number of renewals through intranet and opac for the given itemnumber, limited by $renewals_limit
+
+=cut
+
+sub GetRenewalDetails {
+    my ( $itemnumber, $renewals_limit ) = @_;
+    my $dbh   = C4::Context->dbh;
+    my $query = "SELECT * FROM statistics WHERE type = 'renew' AND itemnumber = ? ORDER BY datetime DESC LIMIT ?";
+    my $sth = $dbh->prepare($query);
+    $sth->execute( $itemnumber, $renewals_limit );
+
+    my $renewals_intranet = 0;
+    my $renewals_opac = 0;
+
+    while ( my $data = $sth->fetchrow_hashref ) {
+      if ( $data->{'other'} eq 'opac' ) {
+        $renewals_opac++;
+      } else {
+        $renewals_intranet++;
+      }
+    }
+
+    return ( $renewals_intranet, $renewals_opac );
 }
 
 =head2 DeleteTransfer
