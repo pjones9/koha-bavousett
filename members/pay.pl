@@ -116,6 +116,7 @@ if ( $check == 0 ) {
                 $line{notify_id}      = $accts->[$i]{'notify_id'};
                 $line{notify_level}   = $accts->[$i]{'notify_level'};
                 $line{net_balance} = 1 if($accts->[$i]{'amountoutstanding'} > 0); # you can't pay a credit.
+                $line{net_balance} = undef if ((C4::Context->preference("EnableOverdueAccruedAmount")) && ($accts->[$i]{'accounttype'} eq "FU"));
                 push( @loop_pay, \%line );
             }
         }

@@ -397,8 +397,13 @@ function isValidDate(theField){
 	
 <div id="finesandcharges">
     <h2>Fines and Charges</h2>
-    <!-- TMPL_IF NAME="totaldue_raw" -->
-        <p>Total due: <!-- TMPL_VAR NAME="totaldue" --></p>
+    <!-- TMPL_IF EXPR="totaldue ne '0.00'" -->
+        <!-- TMPL_IF NAME="EnableOverdueAccruedAmount" -->
+          <p>Amount due: <!-- TMPL_VAR NAME="amountpastdue" --></p>
+          <p>Overdue accrued amount: <!-- TMPL_VAR NAME="amountaccruing" --></p>
+        <!-- TMPL_ELSE -->
+          <p>Total due: <!-- TMPL_VAR NAME="totaldue" --></p>
+        <!-- /TMPL_IF -->
     <!-- TMPL_ELSE -->
         <p>No outstanding charges</p>
     <!-- /TMPL_IF -->

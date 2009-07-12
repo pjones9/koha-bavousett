@@ -326,6 +326,24 @@ sub chargelostitem{
     # if a borrower lost the item, add a replacement cost to the their record
     if ( $issues->{borrowernumber} ){
 
+        # check to see if item is currently overdue.  If so, change accounttype
+        # from 'FU' to 'F'.
+        my $sth2 = $dbh->prepare("SELECT *
+                                  FROM accountlines
+                                  WHERE borrowernumber = ?
+                                    AND itemnumber = ?");
+        $sth2->execute($issues->{borrowernumber},$itemnumber);
+        while (my $potential_overdue = $sth2->fetchrow_hashref()) {
+          if ($potential_overdue->{accounttype} eq 'FU') {
+            my $sth3 = $dbh->prepare("UPDATE accountlines
+                                      SET accounttype = ?
+                                      WHERE borrowernumber = ?
+                                        AND itemnumber = ?
+                                        AND accountno = ?");
+            $sth3->execute('F',$issues->{borrowernumber},$itemnumber,$potential_overdue->{accountno});
+          }
+        }
+
         # first make sure the borrower hasn't already been charged for this item
         my $sth1=$dbh->prepare("SELECT * from accountlines
         WHERE borrowernumber=? AND itemnumber=? and accounttype='L'");

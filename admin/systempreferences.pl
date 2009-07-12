@@ -163,6 +163,7 @@ $tabsysprefs{AllowNotForLoanOverride}        = "Circulation";
 $tabsysprefs{RenewalPeriodBase}              = "Circulation";
 $tabsysprefs{FilterBeforeOverdueReport}      = "Circulation";
 $tabsysprefs{OPACFineNoRenewals}              = "Circulation";
+$tabsysprefs{EnableOverdueAccruedAmount}     = "Circulation";
 
 # Staff Client
 $tabsysprefs{TemplateEncoding}        = "StaffClient";
