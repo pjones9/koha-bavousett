@@ -1533,10 +1533,6 @@ sub AddReturn {
             $messages->{'WasLost'} = 1;
         }
 
-        # fix up the overdues in accounts...
-        FixOverduesOnReturn( $borrower->{'borrowernumber'},
-            $iteminformation->{'itemnumber'}, $exemptfine, $dropbox );
-
         # For claims-returned items, update the fine to be as-if they returned it for normal overdue
         if ($iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
           my $datedue = C4::Dates->new($iteminformation->{'date_due'},'iso'); 
@@ -1548,6 +1544,10 @@ sub AddReturn {
               C4::Overdues::UpdateFine($iteminformation->{'itemnumber'},$iteminformation->{'borrowernumber'},$amt, $type, $due_str) if ($amt > 0); 
         }
     
+        # fix up the overdues in accounts...
+        FixOverduesOnReturn( $borrower->{'borrowernumber'},
+            $iteminformation->{'itemnumber'}, $exemptfine, $dropbox );
+
         # find reserves.....
         # if we don't have a reserve with the status W, we launch the Checkreserves routine
         my ( $resfound, $resrec ) = C4::Reserves::CheckReserves( $iteminformation->{'itemnumber'} );
