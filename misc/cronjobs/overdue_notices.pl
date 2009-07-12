@@ -713,11 +713,6 @@ END_SQL
         } elsif ( defined $htmlfilename ) {
             print $html_fh @output_chunks;
         } else {
-        } 
-        elsif ( defined $htmlfilename ) {
-            print $html_fh @output_chunks;        
-        }
-        else {
             my $attachment = {
                 filename => defined $csvfilename ? 'attachment.csv' : 'attachment.txt',
                 type => 'text/plain',
