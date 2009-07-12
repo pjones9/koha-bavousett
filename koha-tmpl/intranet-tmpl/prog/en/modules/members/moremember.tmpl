@@ -580,7 +580,8 @@ function isValidDate(theField){
 	<input type="hidden" name="from" value="borrower" />
 	<table id="holdst">
 		<thead><tr>
-			<th>Hold date</th>
+			<th>Hold Date</th>
+			<th>Hold Expiration Date</th>
 			<th>Title</th>
 			<th>Item Type</th>
 			<th>Call Number</th>
@@ -592,6 +593,7 @@ function isValidDate(theField){
 		<tbody><!-- TMPL_LOOP NAME="reservloop" -->
 		<tr class="<!-- TMPL_VAR NAME="color" -->">
             <td><!-- TMPL_VAR NAME="reservedate" --></td>
+                   <td align=center><!-- TMPL_VAR NAME="holdexpdate" --></td>
             <td>
                 <a href="/cgi-bin/koha/reserve/request.pl?biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->"><!-- TMPL_VAR NAME="title" escape="html" --></a><!-- TMPL_IF NAME="author" -->, by <!-- TMPL_VAR NAME="author" --><!-- /TMPL_IF -->
             </td>
