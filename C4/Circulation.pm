@@ -32,6 +32,7 @@ use C4::Calendar;
 use C4::Accounts;
 use C4::ItemCirculationAlertPreference;
 use C4::Message;
+use C4::Overdues;
 use Date::Calc qw(
   Today
   Today_and_Now
@@ -1535,6 +1536,17 @@ sub AddReturn {
         # fix up the overdues in accounts...
         FixOverduesOnReturn( $borrower->{'borrowernumber'},
             $iteminformation->{'itemnumber'}, $exemptfine, $dropbox );
+
+        # For claims-returned items, update the fine to be as-if they returned it for normal overdue
+        if ($iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
+          my $datedue = C4::Dates->new($iteminformation->{'date_due'},'iso'); 
+          my $due_str = $datedue->output();
+          my $today = C4::Dates->new();
+          my ($amt, $type, $daycounttotal, $daycount) =
+              C4::Overdues::CalcFine($iteminformation, $borrower->{'categorycode'},$branch, undef, undef,$datedue, $today);
+              (defined $type) or $type= '';
+              C4::Overdues::UpdateFine($iteminformation->{'itemnumber'},$iteminformation->{'borrowernumber'},$amt, $type, $due_str) if ($amt > 0); 
+        }
     
         # find reserves.....
         # if we don't have a reserve with the status W, we launch the Checkreserves routine
