@@ -163,6 +163,10 @@ foreach my $item (@items) {
       $expectedAt  = $reserves->{branchcode};
       $ItemBorrowerReserveInfo = GetMemberDetails( $reservedfor, 0);
       undef $reservedate if ($item_count > $reserve_count);
+      if ($item->{itemlost}) {
+        undef $reservedate;
+        $item_count--;
+      }
     }
 
     if ( defined $reservedate ) {

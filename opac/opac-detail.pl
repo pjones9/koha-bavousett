@@ -169,6 +169,10 @@ for my $itm (@items) {
 
      if( $itm->{'count_reserves'}){
         $itm->{'count_reserves'} = 0 if ($item_count > $itm->{'reserve_count'});
+        if ($itm->{'itemlost'}) {
+          $itm->{'count_reserves'} = 0;
+          $item_count--;
+        };
         if( $itm->{'count_reserves'} eq "Waiting"){ $itm->{'waiting'} = 1; }
         if( $itm->{'count_reserves'} eq "Reserved"){ $itm->{'onhold'} = 1; }
      }
