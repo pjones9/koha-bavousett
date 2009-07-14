@@ -667,7 +667,7 @@ sub GetReservesForBranch {
 
 =item CheckReserves
 
-  ($status, $reserve) = &CheckReserves($itemnumber);
+  ($status, $reserve, $count) = &CheckReserves($itemnumber);
 
 Find a book in the reserves.
 
@@ -688,6 +688,8 @@ C<$status> is either C<Waiting>, C<Reserved> (see above), or 0.
 C<$reserve> is the reserve item that matched. It is a
 reference-to-hash whose keys are mostly the fields of the reserves
 table in the Koha database.
+
+C<$count> is the number of reserves for this item.
 
 =cut
 
@@ -728,7 +730,7 @@ sub CheckReserves {
     $sth->finish;
     # if item is not for loan it cannot be reserved either.....
     #    execption to notforloan is where items.notforloan < 0 :  This indicates the item is holdable. 
-    return ( 0, 0 ) if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype;
+    return ( 0, 0, 0 ) if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype;
 
     # get the reserves...
     # Find this item in the reserves
@@ -747,7 +749,7 @@ sub CheckReserves {
             # might be searching by barcode.
             if ( $res->{'itemnumber'} == $item && $res->{'priority'} == 0) {
                 # Found it
-                return ( "Waiting", $res );
+                return ( "Waiting", $res, $count );
             }
             else {
                 # See if this item is more important than what we've got
@@ -766,10 +768,10 @@ sub CheckReserves {
     # next in line to get this book.
     if ($highest) {    # FIXME - $highest might be undefined
         $highest->{'itemnumber'} = $item;
-        return ( "Reserved", $highest );
+        return ( "Reserved", $highest, $count );
     }
     else {
-        return ( 0, 0 );
+        return ( 0, 0, 0 );
     }
 }
 
