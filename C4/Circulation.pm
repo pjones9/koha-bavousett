@@ -1522,7 +1522,7 @@ sub AddReturn {
         }
 
         # For claims-returned items, update the fine to be as-if they returned it for normal overdue
-        if ($iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
+        if ($iteminformation->{'itemlost'} && $iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
           my $datedue = C4::Dates->new($iteminformation->{'date_due'},'iso'); 
           my $due_str = $datedue->output();
           my $today = C4::Dates->new();
