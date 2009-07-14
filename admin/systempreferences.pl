@@ -164,6 +164,7 @@ $tabsysprefs{RenewalPeriodBase}              = "Circulation";
 $tabsysprefs{FilterBeforeOverdueReport}      = "Circulation";
 $tabsysprefs{OPACFineNoRenewals}              = "Circulation";
 $tabsysprefs{EnableOverdueAccruedAmount}     = "Circulation";
+$tabsysprefs{MarkLostItemsReturned}          = "Circulation";
 
 # Staff Client
 $tabsysprefs{TemplateEncoding}        = "StaffClient";

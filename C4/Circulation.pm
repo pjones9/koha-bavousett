@@ -1026,6 +1026,7 @@ sub AddIssue {
         ModItem({ issues           => $item->{'issues'},
                   holdingbranch    => C4::Context->userenv->{'branch'},
                   itemlost         => 0,
+                  paidfor          => '',
                   datelastborrowed => C4::Dates->new()->output('iso'),
                   onloan           => $datedue->output('iso'),
                 }, $item->{'biblionumber'}, $item->{'itemnumber'});
