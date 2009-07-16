@@ -45,7 +45,7 @@ my $output = $input->param("output");
 my $basename = $input->param("basename");
 my $mime = $input->param("MIME");
 
-my $initstatement = "SELECT borrowers.surname as 'Last Name', borrowers.firstname as 'First Name', biblio.title as 'Title', old_reserves.reservedate as 'Date Reserved', old_reserves.cancellationdate as 'Date Cancelled/Expired', items.onloan as 'Currently Due', branches.branchname as 'Library' FROM old_reserves LEFT JOIN borrowers ON (old_reserves.borrowernumber = borrowers.borrowernumber) LEFT JOIN biblio ON (old_reserves.biblionumber = biblio.biblionumber) LEFT JOIN items ON (items.biblionumber = biblio.biblionumber) LEFT JOIN branches ON (old_reserves.branchcode = branches.branchcode)";
+my $initstatement = "SELECT DISTINCT biblio.title as 'Title', borrowers.surname as 'Last Name', borrowers.firstname as 'First Name', old_reserves.cancellationdate as 'Date Cancelled/Expired', branches.branchname as 'Library' FROM old_reserves LEFT JOIN borrowers ON (old_reserves.borrowernumber = borrowers.borrowernumber) LEFT JOIN biblio ON (old_reserves.biblionumber = biblio.biblionumber) LEFT JOIN branches ON (old_reserves.branchcode = branches.branchcode)";
 
 my $patron      = $input->param('patron')   || undef;
 my $fromdate    = $input->param('from')    || undef;
@@ -97,6 +97,12 @@ if (defined($holdexpdate)) {
     $expfilter = " WHERE old_reserves.cancellationdate = '" . $sqltodate . "'";
   }
   $fullstatement .= $expfilter;
+}
+if ($whereclause) {
+  $fullstatement .= " AND (old_reserves.expirationdate IS NOT NULL OR old_reserves.waitingdate IS NOT NULL)";
+}
+else {
+  $fullstatement .= " (old_reserves.expirationdate IS NOT NULL OR old_reserves.waitingdate IS NOT NULL)";
 }
 $fullstatement .= $endstatement;
 

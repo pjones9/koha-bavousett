@@ -705,15 +705,36 @@ sub CancelReserve {
         ";
         my $sth = $dbh->prepare($query);
         $sth->execute( $item, $borr );
-        $sth->finish;
+
+        # get reserve information to place into old_reserves
         $query = "
-            INSERT INTO old_reserves
             SELECT * FROM reserves
-            WHERE  itemnumber       = ?
-             AND   borrowernumber   = ?
+            WHERE itemnumber     = ?
+             AND  borrowernumber = ?
         ";
         $sth = $dbh->prepare($query);
         $sth->execute( $item, $borr );
+        my $holditem = $sth->fetchrow_hashref;
+        my $insert_fields = '';
+        my $value_fields = '';
+        foreach my $column ('borrowernumber','reservedate','biblionumber','constrainttype','branchcode','notificationdate','reminderdate','cancellationdate','reservenotes','priority','found','itemnumber','waitingdate','expirationdate') {
+          if (defined($holditem->{$column})) {
+            if (length($insert_fields)) {
+              $insert_fields .= ",$column";
+              $value_fields .= ",\'$holditem->{$column}\'";
+            }
+            else {
+              $insert_fields .= "$column";
+              $value_fields .= "\'$holditem->{$column}\'";
+            }
+          }
+        }
+        $query = qq/
+            INSERT INTO old_reserves ($insert_fields)
+            VALUES ($value_fields)
+        /;
+        $sth = $dbh->prepare($query);
+        $sth->execute();
         $query = "
             DELETE FROM reserves
             WHERE  itemnumber       = ?
@@ -724,7 +745,7 @@ sub CancelReserve {
     }
     else {
         # removing a reserve record....
-        # get the prioritiy on this record....
+        # get the priority on this record....
         my $priority;
         my $query = qq/
             SELECT priority FROM reserves
@@ -736,7 +757,6 @@ sub CancelReserve {
         my $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borr );
         ($priority) = $sth->fetchrow_array;
-        $sth->finish;
         $query = qq/
             UPDATE reserves
             SET    cancellationdate = now(),
@@ -749,16 +769,37 @@ sub CancelReserve {
         # update the database, removing the record...
         $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borr );
-        $sth->finish;
 
-        $query = qq/
-            INSERT INTO old_reserves
+        # get reserve information to place into old_reserves
+        my $query = qq/
             SELECT * FROM reserves
-            WHERE  biblionumber     = ?
-              AND  borrowernumber   = ?
+            WHERE biblionumber   = ?
+              AND borrowernumber = ?
         /;
         $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borr );
+        my $holditem = $sth->fetchrow_hashref;
+
+        my $insert_fields = '';
+        my $value_fields = '';
+        foreach my $column ('borrowernumber','reservedate','biblionumber','constrainttype','branchcode','notificationdate','reminderdate','cancellationdate','reservenotes','priority','found','itemnumber','waitingdate','expirationdate') {
+          if (defined($holditem->{$column})) {
+            if (length($insert_fields)) {
+              $insert_fields .= ",$column";
+              $value_fields .= ",\'$holditem->{$column}\'";
+            }
+            else {
+              $insert_fields .= "$column";
+              $value_fields .= "\'$holditem->{$column}\'";
+            }
+          }
+        }
+        $query = qq/
+            INSERT INTO old_reserves ($insert_fields)
+            VALUES ($value_fields)
+        /;
+        $sth = $dbh->prepare($query);
+        $sth->execute();
 
         $query = qq/
             DELETE FROM reserves
@@ -769,7 +810,7 @@ sub CancelReserve {
         $sth->execute( $biblio, $borr );
 
         # now fix the priority on the others....
-        _FixPriority( $priority, $biblio );
+        _FixPriority( $priority , $biblio );
     }
 }
 
@@ -824,15 +865,34 @@ sub ModReserve {
         my $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borrower );
         $sth->finish;
+        my $query = qq/
+            SELECT * FROM reserves
+            WHERE biblionumber   = ?
+              AND borrowernumber = ?
+        /;
+        my $sth = $dbh->prepare($query);
+        $sth->execute( $biblio, $borrower );
+        my $holditem = $sth->fetchrow_hashref;
+        my $insert_fields = '';
+        my $value_fields = '';
+        foreach my $column ('borrowernumber','reservedate','biblionumber','constrainttype','branchcode','notificationdate','reminderdate','cancellationdate','reservenotes','priority','found','itemnumber','waitingdate','expirationdate') {
+          if (defined($holditem->{$column})) {
+            if (length($insert_fields)) {
+              $insert_fields .= ",$column";
+              $value_fields .= ",\'$holditem->{$column}\'";
+            }
+            else {
+              $insert_fields .= "$column";
+              $value_fields .= "\'$holditem->{$column}\'";
+            }
+          }
+        }
         $query = qq/
-            INSERT INTO old_reserves
-            SELECT *
-            FROM   reserves 
-            WHERE  biblionumber   = ?
-             AND   borrowernumber = ?
+            INSERT INTO old_reserves ($insert_fields)
+            VALUES ($value_fields)
         /;
         $sth = $dbh->prepare($query);
-        $sth->execute( $biblio, $borrower );
+        $sth->execute();
         $query = qq/
             DELETE FROM reserves 
             WHERE  biblionumber   = ?
