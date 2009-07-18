@@ -129,6 +129,8 @@ my $strsth =
         GROUP_CONCAT(DISTINCT items.itemcallnumber 
         		ORDER BY items.itemnumber SEPARATOR '<br/>') l_itemcallnumber,
         items.itemnumber,
+        items.ccode,
+        items.barcode,
         notes,
         notificationdate,
         reminderdate,
@@ -190,11 +192,13 @@ while ( my $data = $sth->fetchrow_hashref ) {
             notes            => $data->{notes},
             notificationdate => $data->{notificationdate},
             reminderdate     => $data->{reminderdate},
-            count				  => $data->{icount},
-            rcount			  => $data->{rcount},
-            pullcount		  => $data->{icount} <= $data->{rcount} ? $data->{icount} : $data->{rcount},
-            itype				  => $data->{l_itype},
-            location			  => $data->{l_location}
+            count            => $data->{icount},
+            rcount           => $data->{rcount},
+            pullcount        => $data->{icount} <= $data->{rcount} ? $data->{icount} : $data->{rcount},
+            itype            => $data->{l_itype},
+            location         => $data->{l_location},
+            ccode            => $data->{ccode},
+            barcode          => $data->{barcode}
         }
     );
     $previous=$this;
