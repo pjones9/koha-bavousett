@@ -436,6 +436,7 @@ function isValidDate(theField){
 		<li><a href="#finesandcharges">Fines &amp; Charges</a></li>
 		<li><a href="#onhold">On Hold</a></li>
 		<li><a href="#revisionhistory">Revision History</a></li>
+              <li><a href="#blocks">Blocks</a></li> 
 	</ul>
 	
 <div id="finesandcharges">
@@ -474,6 +475,7 @@ function isValidDate(theField){
       <p>Patron has no revisions.</p>
     <!-- /TMPL_IF -->
 </div>
+
 
 <div id="checkedout">
     <h2>Checked Out</h2>
@@ -713,6 +715,47 @@ function isValidDate(theField){
 	</div>
 </div>
 <!-- /TMPL_IF --> <!-- unknowuser -->
+
+<div id="blocks">
+    <h2>Blocks</h2>
+    <!-- TMPL_IF NAME="blocksloop" -->
+    <table id="blockst">
+      <thead>
+	  <tr>
+	    <th scope="col">Borrower#</th>
+	    <th scope="col">Reference#</th>
+           <th scope="col">Order</th>
+           <th scope="col">Item#</th>
+           <th scope="col">Timestamp</th>
+           <th scope="col">Block</th>
+           <th scope="col">Amount</th>
+           <th scope="col">Comment</th>
+           <th scope="col">Notice#</th>
+           <th scope="col">Print notice</th>
+		</tr></thead>
+		<tbody><!-- TMPL_LOOP NAME="blocksloop" -->
+            <!-- TMPL_IF name="toggle" -->
+              <tr class="highlight">
+            <!-- TMPL_ELSE -->
+              <tr>
+            <!-- /TMPL_IF -->
+		<td><!-- TMPL_VAR NAME="borrowernumber" --></td>
+		<td><!-- TMPL_VAR NAME="referencenumber" --></td>
+		<td><!-- TMPL_VAR NAME="ord" --></td>
+		<td><!-- TMPL_VAR NAME="itemnumber" --></td>
+		<td><!-- TMPL_VAR NAME="timestamp" --></td>
+		<td><!-- TMPL_VAR NAME="block" --></td>
+		<td><!-- TMPL_VAR NAME="amount" --></td>
+		<td><!-- TMPL_VAR NAME="comment" --></td>
+		<td><!-- TMPL_VAR NAME="noticenumber" --></td>
+		<td><!-- TMPL_VAR NAME="print_notice" --></td>
+			</tr>
+		<!-- /TMPL_LOOP --></tbody>
+	</table>
+	<!-- TMPL_ELSE -->
+	<p>Patron has no blocks.</p>
+	<!-- /TMPL_IF -->
+</div>
 
 
 </div>

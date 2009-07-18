@@ -1426,21 +1426,21 @@ sub AddReturn {
     my $doreturn       = 1;
     my $validTransfert = 0;
     my $reserveDone    = 0;
-    
     # get information on item
     my $itemnumber      = GetItemnumberFromBarcode( $barcode );
     my $iteminformation = GetItemIssue($itemnumber);
     my $biblio          = GetBiblioItemData($iteminformation->{'biblioitemnumber'});
-#     use Data::Dumper;warn Data::Dumper::Dumper($iteminformation);  
+ #    use Data::Dumper;warn Data::Dumper::Dumper($iteminformation);  
     unless ($itemnumber) {
         $messages->{'BadBarcode'} = $barcode;
         $doreturn = 0;
     } else {
-        if ( not $iteminformation ) {
+        if ( not $iteminformation->{'homebranch'} ) {
             $messages->{'NotIssued'} = $barcode;
             # even though item is not on loan, it may still
             # be transferred; therefore, get current branch information
             my $curr_iteminfo = GetItem($iteminformation->{'itemnumber'});
+
             $iteminformation->{'homebranch'}    = $curr_iteminfo->{'homebranch'};
             $iteminformation->{'holdingbranch'} = $curr_iteminfo->{'holdingbranch'};
             $iteminformation->{'itemlost'}      = $curr_iteminfo->{'itemlost'};
@@ -1535,7 +1535,7 @@ sub AddReturn {
         }
 
         # For claims-returned items, update the fine to be as-if they returned it for normal overdue
-        if ($iteminformation->{'itemlost'} && $iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
+        if ($iteminformation->{'date_due'} && $iteminformation->{'itemlost'} && $iteminformation->{'itemlost'} == C4::Context->preference('ClaimsReturnedValue')){
           my $datedue = C4::Dates->new($iteminformation->{'date_due'},'iso'); 
           my $due_str = $datedue->output();
           my $today = C4::Dates->new();
@@ -1589,7 +1589,8 @@ sub AddReturn {
         
         #adding message if holdingbranch is non equal a userenv branch to return the document to homebranch
         #we check, if we don't have reserv or transfert for this document, if not, return it to homebranch .
-        
+       my $itembranch = $iteminformation->{'homebranch'};
+ 
         if ($doreturn and ($branch ne $iteminformation->{'homebranch'}) and not $messages->{'WrongTransfer'} and ($validTransfert ne 1) and ($reserveDone ne 1) ){
 			if (C4::Context->preference("AutomaticItemReturn") == 1) {
 				ModItemTransfer($iteminformation->{'itemnumber'}, C4::Context->userenv->{'branch'}, $iteminformation->{'homebranch'});

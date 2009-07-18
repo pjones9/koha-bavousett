@@ -155,6 +155,11 @@ if ( $query->param('place_reserve') ) {
 
     # List is composed of alternating biblio/item/branch
     my $selectedItems = $query->param('selecteditems');
+$selectedItems =~ s/\/$//;
+    if (C4::Context->preference('singleBranchMode')){
+        my $branch = $borr->{'branchcode'};
+        $selectedItems .= $branch;
+    }
 
     if ($query->param('reserve_mode') eq 'single') {
         # This indicates non-JavaScript mode, so there was

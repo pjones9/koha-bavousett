@@ -165,7 +165,7 @@ sub buildKohaItemsNamespace {
             if ( $item->{itemnotforloan} > 0 || $item->{notforloan} > 0 || $itemtypes->{ $item->{itype} }->{notforloan} == 1 ) {
                 $status = "reference";
             }
-            if ($item->{onloan}) {
+            if ($item->{onloan} ne "0000-00-00") {
                 $status = "Checked out";
             }
             if ( $item->{wthdrawn}) {

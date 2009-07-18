@@ -47,6 +47,7 @@ BEGIN {
 		&GetGuarantees 
 
 		&GetMemberIssuesAndFines
+              &GetBlocks
 		&GetPendingIssues
 		&GetAllIssues
         &GetEarliestDueDate
@@ -1038,6 +1039,33 @@ sub UpdateGuarantees {
         $sth3->finish;
     }
 }
+=head2 GetBlocks
+
+  my $blocks = &GetBlocks($borrowernumber);
+
+Looks up blocks associated with a patron
+
+C<&GetBlocks> returns a
+reference-to-array where each element is a reference-to-hash; the
+keys are the fields from the C<Blocks> table.
+
+=cut
+
+sub GetBlocks {
+    my $borrowernumber = shift;
+    my $sth = C4::Context->dbh->prepare(
+   "SELECT borrowernumber,referencenumber,ord,itemnumber,timestamp,block,amount,comment,
+    noticenumber,print_notice
+    FROM   blocks
+    WHERE
+    borrowernumber=?
+    ORDER BY referencenumber,ord,timestamp;"
+    );
+    $sth->execute($borrowernumber);
+    my $data = $sth->fetchall_arrayref({});
+    return $data;
+}
+
 =head2 GetPendingIssues
 
   my $issues = &GetPendingIssues($borrowernumber);

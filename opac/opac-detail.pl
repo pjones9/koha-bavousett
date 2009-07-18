@@ -167,8 +167,8 @@ for my $itm (@items) {
          $itm->{'lostimagelabel'} = $lostimageinfo->{ 'label' };
      }
 
-     if( $itm->{'count_reserves'}){
-        $itm->{'count_reserves'} = 0 if ($item_count > $itm->{'reserve_count'});
+     if( $itm->{'reserves'}){
+        #$itm->{'count_reserves'} = 0 if ($item_count > $itm->{'reserve_count'});
         if ($itm->{'itemlost'}) {
           $itm->{'count_reserves'} = 0;
           $item_count--;

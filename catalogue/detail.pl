@@ -159,12 +159,12 @@ foreach my $item (@items) {
     my ($reservedate,$reservedfor,$expectedAt);
     my $ItemBorrowerReserveInfo;
     my ($restype,$reserves,$reserve_count) = CheckReserves($item->{itemnumber});
-    if ($reserves != 0) {
+    if ($restype eq "Waiting") {
       $reservedate = $reserves->{reservedate};
       $reservedfor = $reserves->{borrowernumber};
       $expectedAt  = $reserves->{branchcode};
       $ItemBorrowerReserveInfo = GetMemberDetails( $reservedfor, 0);
-      undef $reservedate if ($item_count > $reserve_count);
+      #undef $reservedate if ($item_count > $reserve_count);
       if ($item->{itemlost}) {
         undef $reservedate;
         $item_count--;

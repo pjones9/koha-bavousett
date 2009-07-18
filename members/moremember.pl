@@ -225,6 +225,20 @@ my $lib2 = &GetSortDetails( "Bsort2", $data->{'sort2'} );
 $template->param( lib1 => $lib1 ) if ($lib1);
 $template->param( lib2 => $lib2 ) if ($lib2);
 
+##burbs/blocks
+#
+my $blocks = GetBlocks($borrowernumber);
+my $blockscount = scalar(@$blocks);
+my @blocksdata;
+my $toggle     = 0;
+for ( my $i = 0 ; $i < $blockscount ; $i++ ) {
+    my %row = %{ $blocks->[$i] };
+    $row{toggle} = $toggle++ % 2;
+    push( @blocksdata, \%row );
+
+}
+
+
 # current issues
 #
 my $issue = GetPendingIssues($borrowernumber);
@@ -483,6 +497,7 @@ $template->param(
     totaldue         => sprintf( "%.2f", $total ),
     amountaccruing   => sprintf( "%.2f", $amountaccruing),
     amountpastdue    => sprintf( "%.2f", $amountpastdue),
+    blocksloop        => \@blocksdata,
     issueloop        => \@issuedata,
     overdues_exist   => $overdues_exist,
     error            => $error,
