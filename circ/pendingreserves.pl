@@ -31,6 +31,7 @@ use C4::Auth;
 use C4::Dates qw/format_date format_date_in_iso/;
 use C4::Debug;
 use Date::Calc qw/Today Add_Delta_YMD/;
+use C4::Reserves;
 
 my $input = new CGI;
 my $order = $input->param('order');
@@ -130,7 +131,7 @@ my $strsth =
         GROUP_CONCAT(DISTINCT items.itemcallnumber 
         		ORDER BY items.itemnumber SEPARATOR '<br/>') l_itemcallnumber,
         items.itemnumber,
-        items.ccode,
+        authorised_values.lib,
         items.barcode,
         notes,
         notificationdate,
@@ -145,6 +146,7 @@ my $strsth =
 	LEFT JOIN items ON items.biblionumber=reserves.biblionumber 
 	LEFT JOIN biblio ON reserves.biblionumber=biblio.biblionumber
 	LEFT JOIN branchtransfers ON items.itemnumber=branchtransfers.itemnumber
+	LEFT JOIN authorised_values ON items.ccode=authorised_values.authorised_value
  WHERE
 reserves.found IS NULL
  $sqldatewhere
@@ -170,6 +172,10 @@ my @reservedata;
 my $previous;
 my $this;
 while ( my $data = $sth->fetchrow_hashref ) {
+    my ($count,$reserves) = GetReservesFromBiblionumber($data->{biblionumber});
+    foreach my $reserve (@$reserves) {
+      undef $data->{barcode} if (!defined($reserve->{itemnumber}));
+    }
     $this=$data->{biblionumber}.":".$data->{borrowernumber};
     my @itemlist;
     push(
@@ -198,7 +204,7 @@ while ( my $data = $sth->fetchrow_hashref ) {
             pullcount        => $data->{icount} <= $data->{rcount} ? $data->{icount} : $data->{rcount},
             itype            => $data->{l_itype},
             location         => $data->{l_location},
-            ccode            => $data->{ccode},
+            ccode            => $data->{lib},
             barcode          => $data->{barcode}
         }
     );
