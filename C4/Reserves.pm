@@ -703,8 +703,7 @@ sub CheckReserves {
         my $query = "
             SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan
             FROM   items
-            LEFT JOIN biblioitems ON items.biblioitemnumber = biblioitems.biblioitemnumber
-            LEFT JOIN itemtypes ON biblioitems.itemtype = itemtypes.itemtype
+            LEFT JOIN itemtypes ON items.itype = itemtypes.itemtype
             WHERE  itemnumber=$qitem
         ";
         $sth = $dbh->prepare($query);
@@ -715,11 +714,8 @@ sub CheckReserves {
         my $query = "
             SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan
             FROM   items
-            LEFT JOIN biblioitems ON items.biblioitemnumber = biblioitems.biblioitemnumber
-            LEFT JOIN itemtypes ON biblioitems.itemtype = itemtypes.itemtype
-            WHERE  items.biblioitemnumber = biblioitems.biblioitemnumber
-              AND biblioitems.itemtype = itemtypes.itemtype
-              AND barcode=$qbc
+            LEFT JOIN itemtypes ON items.itype = itemtypes.itemtype
+            WHERE barcode=$qbc
         ";
         $sth = $dbh->prepare($query);
 
