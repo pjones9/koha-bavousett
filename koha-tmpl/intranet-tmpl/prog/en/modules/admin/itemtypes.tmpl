@@ -225,6 +225,14 @@ Item Types Administration
         
       </li>
       <li>
+          <label for="notforhold">Not for hold</label>   <!-- TMPL_IF name="notforhold" -->
+                <input type="checkbox" id="notforhold" name="notforhold" checked="checked" value="1" />
+            <!-- TMPL_ELSE -->
+                <input type="checkbox" id="notforhold" name="notforhold" value="1" />
+            <!-- /TMPL_IF -->
+       (if checked, no item of this type can be used to fill a hold.)
+      </li>
+      <li>
           <label for="renewalsallowed">Renewals: </label>
 		  <input type="text" id="renewalsallowed" name="renewalsallowed" size="3" maxlength="3" value="<!-- TMPL_VAR NAME="renewalsallowed" -->" />
         </li>
@@ -290,6 +298,7 @@ Item Types Administration
     <th>Code</th>
     <th>Description</th>
     <th>Not for loan</th>
+    <th>Not for hold</th>
     <th>Renewable</th>
     <th>Charge</th>
     <th>Hold fee</th>
@@ -309,6 +318,7 @@ Item Types Administration
     </td>
     <td><!-- TMPL_VAR name="description" --></td>
     <td><!-- TMPL_IF NAME="notforloan" -->Yes<!-- TMPL_ELSE -->&nbsp;<!-- /TMPL_IF --></td>
+    <td><!-- TMPL_IF NAME="notforhold" -->Yes<!-- TMPL_ELSE -->&nbsp;<!-- /TMPL_IF --></td>
     <td>
     <!-- TMPL_IF NAME="renewalsallowed" -->
       <!-- TMPL_VAR name="renewalsallowed" --> times

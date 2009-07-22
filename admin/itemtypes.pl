@@ -115,6 +115,7 @@ if ( $op eq 'add_form' ) {
         renewalsallowed => $data->{'renewalsallowed'},
         rentalcharge    => sprintf( "%.2f", $data->{'rentalcharge'} ),
         notforloan      => $data->{'notforloan'},
+        notforhold      => $data->{'notforhold'},
         imageurl        => $data->{'imageurl'},
         template        => C4::Context->preference('template'),
         summary         => $data->{summary},
@@ -142,6 +143,7 @@ elsif ( $op eq 'add_validate' ) {
                  , renewalsallowed = ?
                  , rentalcharge = ?
                  , notforloan = ?
+                 , notforhold = ?
                  , imageurl = ?
                  , summary = ?
                  , reservefee = ?
@@ -153,6 +155,7 @@ elsif ( $op eq 'add_validate' ) {
             $input->param('renewalsallowed'),
             $input->param('rentalcharge'),
             ( $input->param('notforloan') ? 1 : 0 ),
+            ( $input->param('notforhold') ? 1 : 0 ),
             (
                 $input->param('image') eq 'removeImage' ? '' : (
                       $input->param('image') eq 'remoteImage'
@@ -180,6 +183,7 @@ elsif ( $op eq 'add_validate' ) {
             $input->param('renewalsallowed'),
             $input->param('rentalcharge'),
             $input->param('notforloan') ? 1 : 0,
+            $input->param('notforhold') ? 1 : 0,
             $image eq 'removeImage' ?           ''                 :
             $image eq 'remoteImage' ? $input->param('remoteImage') :
             $image,

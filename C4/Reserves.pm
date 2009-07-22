@@ -701,7 +701,7 @@ sub CheckReserves {
         my $qitem = $dbh->quote($item);
         # Look up the item by itemnumber
         my $query = "
-            SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan
+            SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan, itemtypes.notforhold 
             FROM   items
             LEFT JOIN itemtypes ON items.itype = itemtypes.itemtype
             WHERE  itemnumber=$qitem
@@ -712,7 +712,7 @@ sub CheckReserves {
         my $qbc = $dbh->quote($barcode);
         # Look up the item by barcode
         my $query = "
-            SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan
+            SELECT items.biblionumber, items.biblioitemnumber, itemtypes.notforloan, items.notforloan AS itemnotforloan, itemtypes.notforhold
             FROM   items
             LEFT JOIN itemtypes ON items.itype = itemtypes.itemtype
             WHERE barcode=$qbc
@@ -722,11 +722,11 @@ sub CheckReserves {
         # FIXME - This function uses $item later on. Ought to set it here.
     }
     $sth->execute;
-    my ( $biblio, $bibitem, $notforloan_per_itemtype, $notforloan_per_item ) = $sth->fetchrow_array;
+    my ( $biblio, $bibitem, $notforloan_per_itemtype, $notforloan_per_item,$notforhold ) = $sth->fetchrow_array;
     $sth->finish;
     # if item is not for loan it cannot be reserved either.....
     #    execption to notforloan is where items.notforloan < 0 :  This indicates the item is holdable. 
-    return ( 0, 0, 0 ) if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype;
+    return ( 0, 0, 0 ) if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype or $notforhold;
 
     # get the reserves...
     # Find this item in the reserves
@@ -1386,7 +1386,7 @@ sub _FixPriority {
                 WHERE  biblionumber = ?
                  AND borrowernumber   = ?
                  AND reservedate = ?
-         AND found IS NULL
+                AND found <> 'W'
     ";
     $sth = $dbh->prepare($query);
     for ( my $j = 0 ; $j < @priority ; $j++ ) {
