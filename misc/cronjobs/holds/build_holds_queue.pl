@@ -278,7 +278,7 @@ sub MapItemsToHoldRequests {
         # look for local match first
 
         my $pickup_branch = $request->{branchcode};
-        my $local_holdallowed = exists $items_by_branch{$pickup_branch} ? _get_issuing_rule( $request, $items_by_branch{$pickup_branch}->[0] )->{holdallowed} : 0;
+        my $local_holdallowed = (exists $items_by_branch{$pickup_branch} and _get_issuing_rule($request,$items_by_branch{$pickup_branch}->[0])) ?  _get_issuing_rule( $request, $items_by_branch{$pickup_branch}->[0] )->{holdallowed} : 0;
 
         if ($local_holdallowed and
             not (($local_holdallowed == 1 and
@@ -304,7 +304,7 @@ sub MapItemsToHoldRequests {
                 @pull_branches = sort keys %items_by_branch;
             }
             foreach my $branch (@pull_branches) {
-                $local_holdallowed = exists $items_by_branch{$branch} ? _get_issuing_rule( $request, $items_by_branch{$branch}->[0] )->{holdallowed} : 0;
+                $local_holdallowed = (exists $items_by_branch{$branch} and _get_issuing_rule( $request, $items_by_branch{$branch}->[0] )) ? _get_issuing_rule( $request, $items_by_branch{$branch}->[0] )->{holdallowed} : 0;
                 next unless $local_holdallowed and
                             not (($local_holdallowed == 1 and
                                  $request->{borrowerbranch} ne $items_by_branch{$branch}->[0]->{homebranch}));
@@ -424,6 +424,10 @@ sub _get_issuing_rule {
     my ($request, $item) = @_;
 
     my ($branch, $categorycode, $itemtype) = ($request->{'borrowerbranch'}, $request->{'borrowercategory'}, $item->{'itype'});
+
+    if (!$itemtype){
+       return undef;
+    }
 
     $issuingrules{$branch}{$categorycode}{$itemtype} ||= GetIssuingRule( $categorycode, $itemtype, $branch );
 
