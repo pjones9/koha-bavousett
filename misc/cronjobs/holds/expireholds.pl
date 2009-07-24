@@ -1,6 +1,6 @@
-#!/usr/bin/perl 
-# run nightly -- remove holds that are later than waitingdate + 
-# ReservesMaxPickUpDelay from the reserves table.  
+#!/usr/bin/perl
+# run nightly -- remove holds that are later than waitingdate +
+# ReservesMaxPickUpDelay from the reserves table.
 #
 # This file is part of Koha.
 #
@@ -56,26 +56,25 @@ my $query = "SELECT * FROM reserves
 my $sth = $dbh->prepare($query);
 $sth->execute($today_iso);
 while (my $expref = $sth->fetchrow_hashref) {
-  my $inssql = "INSERT INTO old_reserves
-                (borrowernumber,reservedate,biblionumber,constrainttype,branchcode,notificationdate,reminderdate,cancellationdate,reservenotes,priority,found,itemnumber,waitingdate,expirationdate)
-                VALUES
-                  ('$expref->{borrowernumber}',
-                   '$expref->{reservedate}',
-                   '$expref->{biblionumber}',
-                   '$expref->{constrainttype}',
-                   '$expref->{branchcode}',
-                   '$expref->{notificationdate}',
-                   '$expref->{reminderdate}',
-                   '$expref->{cancellationdate}',
-                   '$expref->{reservenotes}',
-                   '$expref->{priority}',
-                   '$expref->{found}',
-                   '$expref->{itemnumber}',
-                   '$expref->{waitingdate}',
-                   '$expref->{expirationdate}')";
+  my $insert_fields = '';
+  my $value_fields = '';
+  foreach my $column ('borrowernumber','reservedate','biblionumber','constrainttype','branchcode','notificationdate','reminderdate','cancellationdate','reservenotes','priority','found','itemnumber','waitingdate','expirationdate') {
+    if (defined($expref->{$column})) {
+      if (length($insert_fields)) {
+        $insert_fields .= ",$column";
+        $value_fields .= ",\'$expref->{$column}\'";
+      }
+      else {
+        $insert_fields .= "$column";
+        $value_fields .= "\'$expref->{$column}\'";
+      }
+    }
+  }
+  my $inssql = "INSERT INTO old_reserves ($insert_fields)
+                VALUES ($value_fields)";
   my $sth2 = $dbh->prepare($inssql);
   $sth2->execute();
-  my $delsql = "DELETE FROM reserves 
+  my $delsql = "DELETE FROM reserves
                 WHERE reservenumber = ?";
   $sth2 = $dbh->prepare($delsql);
   $sth2->execute($expref->{reservenumber});

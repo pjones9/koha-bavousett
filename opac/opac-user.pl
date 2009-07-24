@@ -191,9 +191,7 @@ my @reserves  = GetReservesFromBorrowernumber( $borrowernumber );
 foreach my $res (@reserves) {
     $res->{'reservedate'} = format_date( $res->{'reservedate'} );
     if ($res->{'found'} eq 'W') {
-      my ($waitingyear,$waitingmonth,$waitingday) = split(/-/,$res->{'waitingdate'});
-      my ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($waitingyear,$waitingmonth,$waitingday,C4::Context->preference('ReservesMaxPickUpDelay'));
-      $res->{'holdexpdate'} = sprintf "%02d/%02d/%04d",$holdexpmonth,$holdexpday,$holdexpyear;
+      $res->{'holdexpdate'} = format_date( $res->{'expirationdate'} );
     }
     else {
       $res->{'holdexpdate'} = '';

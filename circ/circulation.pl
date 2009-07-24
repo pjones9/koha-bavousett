@@ -402,9 +402,7 @@ if ($borrowernumber) {
         if ( $num_res->{'found'} eq 'W' ) {
           $getreserv{color}   = 'reserved';
           $getreserv{waiting} = 1;
-          my ($waitingyear,$waitingmonth,$waitingday) = split(/-/,$num_res->{'waitingdate'});
-          my ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($waitingyear,$waitingmonth,$waitingday,C4::Context->preference('ReservesMaxPickUpDelay'));
-          $getreserv{holdexpdate} = sprintf "%02d/%02d/%04d",$holdexpmonth,$holdexpday,$holdexpyear;
+          $getreserv{holdexpdate}    = format_date( $num_res->{'expirationdate'} );
 # generate information displaying only waiting reserves
           $getWaitingReserveInfo{title}        = $getiteminfo->{'title'};
           $getWaitingReserveInfo{biblionumber} = $getiteminfo->{'biblionumber'};
