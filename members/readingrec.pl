@@ -75,7 +75,10 @@ for (my $i=0;$i<$count;$i++){
 	$line{renewals}=$issues->[$i]->{'renewals'};
 	$line{barcode}=$issues->[$i]->{'barcode'};
 	$line{volumeddesc}=$issues->[$i]->{'volumeddesc'};
+	if ($line{returndate} eq "")
+	{
 	push(@loop_reading,\%line);
+	}
 }
 
 if ( $data->{'category_type'} eq 'C') {
