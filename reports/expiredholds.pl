@@ -102,7 +102,7 @@ if ($whereclause) {
   $fullstatement .= " AND (old_reserves.expirationdate IS NOT NULL OR old_reserves.waitingdate IS NOT NULL)";
 }
 else {
-  $fullstatement .= " (old_reserves.expirationdate IS NOT NULL OR old_reserves.waitingdate IS NOT NULL)";
+  $fullstatement .= " WHERE (old_reserves.expirationdate IS NOT NULL OR old_reserves.waitingdate IS NOT NULL)";
 }
 $fullstatement .= $endstatement;
 
