@@ -254,9 +254,11 @@ foreach my $biblionumber (@biblionumbers) {
     # get existing reserves .....
     my ( $count, $reserves ) = GetReservesFromBiblionumber($biblionumber);
     my $totalcount = $count;
+warn "total count:  $totalcount";
     my $alreadyreserved;
 
     foreach my $res (@$reserves) {
+use Data::Dumper; warn Data::Dumper::Dumper($res);
         if ( ( $res->{found} eq 'W' ) ) {
             $count--;
         }
@@ -289,6 +291,7 @@ foreach my $biblionumber (@biblionumbers) {
     }
     # adding a fixed value for priority options
     my $fixedRank = $count+1;
+warn "Fixedrank = $fixedRank";
 
     my @branchcodes;
     my %itemnumbers_of_biblioitem;

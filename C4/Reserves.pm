@@ -38,6 +38,7 @@ use C4::Members qw();
 use C4::Letters;
 use C4::Branch qw( GetBranchDetail );
 use List::MoreUtils qw( firstidx );
+use Date::Calc qw(Today Add_Delta_Days);
 
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
@@ -875,7 +876,7 @@ sub CancelReserve {
         $sth->execute( $biblio, $borr );
 
         # get reserve information to place into old_reserves
-        my $query = qq/
+        $query = qq/
             SELECT * FROM reserves
             WHERE biblionumber   = ?
               AND borrowernumber = ?
@@ -981,12 +982,12 @@ sub ModReserve {
         my $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borrower );
         $sth->finish;
-        my $query = qq/
+        $query = qq/
             SELECT * FROM reserves
             WHERE biblionumber   = ?
               AND borrowernumber = ?
         /;
-        my $sth = $dbh->prepare($query);
+        $sth = $dbh->prepare($query);
         $sth->execute( $biblio, $borrower );
         my $holditem = $sth->fetchrow_hashref;
         my $insert_fields = '';
@@ -1179,23 +1180,37 @@ sub ModReserveAffect {
         UPDATE reserves
         SET    priority = 0,
                itemnumber = ?
-        WHERE borrowernumber = ?
-          AND biblionumber = ?
     ";
     }
     else {
     # affect the reserve to Waiting as well.
     my $holdperiod = C4::Context->preference('ReservesMaxPickUpDelay');
-    $query = "
-        UPDATE reserves
-        SET     priority = 0,
-                found = 'W',
-                waitingdate=now(),
-                itemnumber = ?,
-		expirationdate=curdate()+$holdperiod
-        WHERE borrowernumber = ?
-          AND biblionumber = ?
-    ";
+      if ((!defined($holdperiod)) || ($holdperiod eq '') || ($holdperiod == 0)) {
+        $query = "
+            UPDATE reserves
+            SET     priority = 0,
+                    found = 'W',
+                    waitingdate=now(),
+                    itemnumber = ?
+            WHERE borrowernumber = ?
+              AND biblionumber = ?
+        ";
+      }
+      else {
+        my ($holdexpyear,$holdexpmonth,$holdexpday) = Today();
+        ($holdexpyear,$holdexpmonth,$holdexpday) = Add_Delta_Days($holdexpyear,$holdexpmonth,$holdexpday,$holdperiod);
+        my $holdexpdate = sprintf "%4d-%02d-%02d",$holdexpyear,$holdexpmonth,$holdexpday;
+        $query = "
+            UPDATE reserves
+            SET     priority = 0,
+                    found = 'W',
+                    waitingdate=now(),
+                    itemnumber = ?,
+                    expirationdate='$holdexpdate'
+            WHERE borrowernumber = ?
+              AND biblionumber = ?
+        ";
+      }
     }
     $sth = $dbh->prepare($query);
     $sth->execute( $itemnumber, $borrowernumber,$biblionumber);
