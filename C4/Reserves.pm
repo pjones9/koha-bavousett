@@ -1461,7 +1461,7 @@ sub _FixPriority {
                 WHERE  biblionumber = ?
                  AND borrowernumber   = ?
                  AND reservedate = ?
-                AND found <> 'W'
+                AND ((found <> 'W') or (found is null))
     ";
     $sth = $dbh->prepare($query);
     for ( my $j = 0 ; $j < @priority ; $j++ ) {
