@@ -1,0 +1,37 @@
+<!-- TMPL_INCLUDE NAME="doc-head-open.inc" -->
+<title>Print Receipt for <!-- TMPL_VAR NAME="cardnumber" --></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="<!-- TMPL_VAR NAME="themelang" -->/includes/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" type="text/css" href="<!-- TMPL_VAR NAME="themelang" -->/css/print.css" />
+<script language="javascript">
+        window.print();
+        window.close();
+</script>
+</head>
+<body>
+
+<div id="receipt">
+
+<h3><!-- TMPL_VAR name="LibraryName" --></h3>
+<!-- TMPL_IF NAME="branchname" --><!-- TMPL_VAR NAME="branchname" --><br /><!-- /TMPL_IF -->
+Checked out to <a href="/cgi-bin/koha/circ/circulation.pl?findborrower=<!-- TMPL_VAR NAME="cardnumber">"><!-- TMPL_VAR NAME="cardnumber" --></a><br />
+
+<!-- TMPL_VAR NAME="todaysdate" --><br />
+This slip only includes items you 
+<br />checked out today.  For a complete 
+<br />list of your checkouts and 
+<br />overdues, ask staff for a full  
+<br />circulation slip, or log into your 
+<br />library catalog account.<br>
+<P>
+<h4>Checked Out Today:</h4>
+<!-- TMPL_loop name="todayloop" -->
+<!-- TMPL_IF name="red" --><!-- TMPL_ELSE -->
+<p><a href="/cgi-bin/koha/catalogue/detail.pl?item=<!-- TMPL_VAR NAME="itemnumber" -->&amp;biblionumber=<!-- TMPL_VAR NAME="biblionumber" -->&amp;bi=<!-- TMPL_VAR NAME="biblioitemnumber" -->"><B>Title:</b> <!-- TMPL_VAR NAME="title" escape="html" --></a><br />
+<B>Barcode:</b> <!-- TMPL_VAR NAME="barcode" --><br />
+<B>Date due:</b> <!-- TMPL_VAR NAME="date_due" --><br /></p>
+    <!-- /TMPL_IF -->
+    <!-- /TMPL_LOOP -->
+
+
+<!-- TMPL_INCLUDE NAME="intranet-bottom.inc" -->
