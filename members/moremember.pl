@@ -77,6 +77,7 @@ for my $failedret (@failedreturns) { $return_failed{$failedret} = 1; }
 my $template_name;
 
 if    ($print eq "page") { $template_name = "members/moremember-print.tmpl";   }
+elsif ($print eq "todaychg") { $template_name = "members/moremember-todaychg.tmpl"; }
 elsif ($print eq "slip") { $template_name = "members/moremember-receipt.tmpl"; }
 else {                     $template_name = "members/moremember.tmpl";         }
 
@@ -246,10 +247,12 @@ my $count = scalar(@$issue);
 my $roaddetails = &GetRoadTypeDetails( $data->{'streettype'} );
 my $today       = POSIX::strftime("%Y-%m-%d", localtime);	# iso format
 my @issuedata;
+my @todaychg;
 my $overdues_exist = 0;
 my $totalprice = 0;
 for ( my $i = 0 ; $i < $count ; $i++ ) {
     my $datedue = $issue->[$i]{'date_due'};
+    my $chgdate = $issue->[$i]{'issuedate'};
     $issue->[$i]{'date_due'}  = C4::Dates->new($issue->[$i]{'date_due'}, 'iso')->output('syspref');
     $issue->[$i]{'issuedate'} = C4::Dates->new($issue->[$i]{'issuedate'},'iso')->output('syspref');
     my %row = %{ $issue->[$i] };
@@ -285,6 +288,10 @@ for ( my $i = 0 ; $i < $count ; $i++ ) {
 	$row{'renew_failed'}  = $renew_failed{ $issue->[$i]{'itemnumber'} };
 	$row{'return_failed'} = $return_failed{$issue->[$i]{'barcode'}};   
     push( @issuedata, \%row );
+    if ($chgdate eq $today)
+	{
+    		push( @todaychg, \%row );
+	}
 }
 
 ### ###############################################################################
@@ -504,7 +511,6 @@ $template->param(
     is_child         => ($category_type eq 'C'),
 #   reserveloop      => \@reservedata,
     dateformat       => C4::Context->preference("dateformat"),
-    "dateformat_" . (C4::Context->preference("dateformat") || '') => 1,
     samebranch       => $samebranch,
 );
 
