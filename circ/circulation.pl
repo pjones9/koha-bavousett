@@ -462,58 +462,6 @@ my @previousissues;
 my $issued_itemtypes_count;
 my @issued_itemtypes_count_loop;
 
-if ($borrower) {
-# get each issue of the borrower & separate them in todayissues & previous issues
-    my ($issueslist) = GetPendingIssues($borrower->{'borrowernumber'});
-
-    # split in 2 arrays for today & previous
-    foreach my $it ( @$issueslist ) {
-        # set itemtype per item-level_itype syspref - FIXME this is an ugly hack
-        $it->{'itemtype'} = ( C4::Context->preference( 'item-level_itypes' ) ) ? $it->{'itype'} : $it->{'itemtype'};
-
-        ($it->{'charge'}, $it->{'itemtype_charge'}) = GetIssuingCharges(
-            $it->{'itemnumber'}, $borrower->{'borrowernumber'}
-        );
-        $it->{'charge'} = sprintf("%.2f", $it->{'charge'});
-        my ($can_renew, $can_renew_error) = CanBookBeRenewed( 
-            $borrower->{'borrowernumber'},$it->{'itemnumber'}
-        );
-        $it->{"renew_error_${can_renew_error}"} = 1 if defined $can_renew_error;
-        my ( $restype, $reserves ) = CheckReserves( $it->{'itemnumber'} );
-		$it->{'can_renew'} = $can_renew;
-		$it->{'can_confirm'} = !$can_renew && !$restype;
-		$it->{'renew_error'} = $restype;
-
-        $it->{'dd'} = format_date($it->{'date_due'});
-        $it->{'od'} = ( $it->{'date_due'} lt $todaysdate ) ? 1 : 0 ;
-        ($it->{'author'} eq '') and $it->{'author'} = ' ';
-        $it->{'renew_failed'} = $renew_failed{$it->{'itemnumber'}};
-        # ADDED BY JF: NEW ITEMTYPE COUNT DISPLAY
-        $issued_itemtypes_count->{ $it->{'itemtype'} }++;
-
-        if ( $it->{'renewals'} ) {
-          ( $it->{'renewals_intranet'}, $it->{'renewals_opac'} ) = GetRenewalDetails( $it->{'itemnumber'}, $it->{'renewals'} );
-        }
-
-        if ( $todaysdate eq $it->{'issuedate'} or $todaysdate eq $it->{'lastreneweddate'} ) {
-            push @todaysissues, $it;
-        } else {
-            push @previousissues, $it;
-        }
-    }
-    if ( C4::Context->preference( "todaysIssuesDefaultSortOrder" ) eq 'asc' ) {
-        @todaysissues   = sort { $a->{'timestamp'} cmp $b->{'timestamp'} } @todaysissues;
-    }
-    else {
-        @todaysissues   = sort { $b->{'timestamp'} cmp $a->{'timestamp'} } @todaysissues;
-    }
-    if ( C4::Context->preference( "previousIssuesDefaultSortOrder" ) eq 'asc' ){
-        @previousissues = sort { $a->{'date_due'} cmp $b->{'date_due'} } @previousissues;
-    }
-    else {
-        @previousissues = sort { $b->{'date_due'} cmp $a->{'date_due'} } @previousissues;
-    }
-}
 
 #### ADDED BY JF FOR COUNTS BY ITEMTYPE RULES
 # FIXME: This should utilize all the issuingrules options rather than just the defaults
