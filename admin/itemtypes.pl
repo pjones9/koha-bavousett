@@ -171,9 +171,9 @@ elsif ( $op eq 'add_validate' ) {
     else {    # add a new itemtype & not modif an old
         my $query = "
             INSERT INTO itemtypes
-                (itemtype,description,renewalsallowed,rentalcharge, notforloan, imageurl,summary,reservefee)
+                (itemtype,description,renewalsallowed,rentalcharge, notforloan, notforhold, imageurl,summary,reservefee)
             VALUES
-                (?,?,?,?,?,?,?,?);
+                (?,?,?,?,?,?,?,?,?);
             ";
         my $sth = $dbh->prepare($query);
 		my $image = $input->param('image');
