@@ -61,6 +61,7 @@ This module provides searching functions for Koha's bibliographic databases
   &getRecords
   &buildQuery
   &NZgetRecords
+  &NewBooksList
 );
 
 # make all your functions, whether exported or not;
@@ -2107,6 +2108,36 @@ sub z3950_search_args {
     return $array;
 }
 
+=head2 NewBooksList
+
+$arrayref = NewBooksList;
+
+Returns an array of biblios that meet the criteria set by the system for a new books list.
+
+=cut 
+
+sub NewBooksList {
+    my $dbh = C4::Context->dbh;
+    my $query = $dbh -> prepare("SELECT biblio.biblionumber,marc,itype,title FROM biblioitems LEFT JOIN biblio ON biblioitems.biblionumber=biblio.biblionumber LEFT JOIN items on biblioitems.biblioitemnumber=items.biblioitemnumber WHERE DATE_SUB(CURDATE(),INTERVAL ? DAY) <= biblio.datecreated ORDER BY biblio.datecreated DESC LIMIT ?;");
+    $query->execute(C4::Context->preference('OPACNewBooksDays'),C4::Context->preference('OPACNewBooksMaxList')*4);
+    my @results;
+    my $i=0;
+    my %badtypes;
+    my %tmprecs;
+    my $maxcount =  C4::Context->preference('OPACNewBooksMaxList');
+    foreach (split(',',C4::Context->preference('OPACNewBooksTypesExcluded'))){
+        $badtypes{$_} = 1;
+    }
+    while ((my $rec = $query->fetchrow_hashref()) && ($i < $maxcount)) {
+       warn "found $rec->{'itype'}";
+       if (  (exists($badtypes{$rec->{'itype'}})) or (exists($tmprecs{$rec->{'biblionumber'}})) )  {
+           next;
+       }  
+       $tmprecs{$rec->{'biblionumber'}}=1;
+       $results[$i]=$rec->{'marc'};
+       $i++}
+    return @results;
+}
 
 END { }    # module clean-up code here (global destructor)
 

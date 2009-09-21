@@ -26,6 +26,7 @@ use C4::Branch;          # GetBranches
 use C4::Members;         # GetMember
 use C4::NewsChannels;    # get_opac_news
 use C4::Acquisition;     # GetRecentAcqui
+use C4::Search;
 
 my $input = new CGI;
 my $dbh   = C4::Context->dbh;
@@ -55,6 +56,23 @@ $template->param(
     koha_news       => $all_koha_news,
     koha_news_count => $koha_news_count
 );
+
+if (C4::Context->preference('OPACNewBooks') eq "frontpage"){
+   my @newbooks_arr = &C4::Search::NewBooksList;
+   my @newresults;
+   my $resultcount =scalar (@newbooks_arr); 
+   @newresults = searchResults("",$resultcount,$resultcount,0,0,@newbooks_arr);
+   $template->param(
+      opacnewbooks => 1,
+      opacnewbooksheader => C4::Context->preference('OPACNewBooksHeader'),
+      SEARCH_RESULTS => \@newresults
+   );
+}
+elsif (C4::Context->preference('OPACNewBooks') eq "link"){
+   $template->param(
+      opacnewbooklink => 1
+   );
+}
 
 # If GoogleIndicTransliteration system preference is On Set paramter to load Google's javascript in OPAC search screens 
 if (C4::Context->preference('GoogleIndicTransliteration')) {
