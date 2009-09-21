@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# Copyright 2009 PTFS Inc.
+#
 # This file is part of Koha.
 #
 # Koha is free software; you can redistribute it and/or modify it under the
@@ -15,44 +17,37 @@
 # Koha; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
 # Suite 330, Boston, MA  02111-1307 USA
 
-=head1 member-search.pl
-
-Member Search.pl script used to search for members to add to a routing list
-
-=cut
-
 use strict;
 use warnings;
-use CGI;
-use C4::Auth;       # get_template_and_user
-use C4::Output;
-use C4::Members;    # BornameSearch
 
-my $query          = new CGI;
-my $subscriptionid = $query->param('subscriptionid');
-my $searchstring   = $query->param('member');
+use CGI;
+
+use C4::Context;
+use C4::Auth;
+use C4::Output;
+use C4::Members;
+use C4::Accounts;
+use C4::Stats;
+use C4::Koha;
+use C4::Overdues;
+use C4::Branch;    # GetBranches
+
+my $input = new CGI;
 
 my ( $template, $loggedinuser, $cookie ) = get_template_and_user(
-    {
-        template_name   => "serials/member-search.tmpl",
-        query           => $query,
+    {   template_name   => "circ/circulation.tmpl",
+        query           => $input,
         type            => "intranet",
         authnotrequired => 0,
-        flagsrequired   => { serials => 1 },
+        flagsrequired   => { borrowers => 1 },
         debug           => 1,
     }
 );
 
-if ($searchstring) {
-    my ( $count, $members ) = &SearchMember( $searchstring, "surname" );
+my $borrowernumber = $input->param('borrowernumber');
+my $message_id     = $input->param('message_id');
 
-    $template->param(
-        subscriptionid => $subscriptionid,
-        memberloop     => $members,
-        member         => $searchstring,
-    );
-}
-else {
-    $template->param( subscriptionid => $subscriptionid, );
-}
-output_html_with_http_headers $query, $cookie, $template->output;
+DeleteMessage($message_id);
+
+print $input->redirect(
+    "/cgi-bin/koha/circ/circulation.pl?borrowernumber=$borrowernumber");
